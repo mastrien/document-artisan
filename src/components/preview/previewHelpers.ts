@@ -113,10 +113,12 @@ export function formatCaptionSeparator(sep: CaptionSeparator): string {
 }
 
 export function formatInlineCitation(config: TemplateConfig): string {
-  const style = config.modules.citations.style;
+  const { style, abntCiteCase } = config.modules.citations;
   switch (style) {
     case 'abnt':
-      return '(SILVA; ALMEIDA, 2024; BRINGHURST, 2012)';
+      return abntCiteCase === 'uppercase'
+        ? '(SILVA; ALMEIDA, 2024; BRINGHURST, 2012)'
+        : '(Silva; Almeida, 2024; Bringhurst, 2012)';
     case 'apa':
     case 'authoryear':
       return '(Silva & Almeida, 2024; Bringhurst, 2012)';

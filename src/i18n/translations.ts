@@ -329,6 +329,9 @@ export const TRANSLATIONS = {
         name: 'Citações e Bibliografia',
         desc: 'csquotes + biblatex + biber',
         style: 'Padrão de citação',
+        abntCase: 'Caixa do sobrenome (ABNT)',
+        abntTitlecase: 'Inicial maiúscula (NBR 10520:2023)',
+        abntUppercase: 'CAIXA ALTA (legado 2002)',
         bibFile: 'Arquivo .bib',
       },
       dialogues: {
@@ -772,6 +775,9 @@ export const TRANSLATIONS = {
         name: 'Citations & Bibliography',
         desc: 'csquotes + biblatex + biber',
         style: 'Citation style',
+        abntCase: 'ABNT surname case',
+        abntTitlecase: 'Title Case (NBR 10520:2023)',
+        abntUppercase: 'ALL CAPS (legacy 2002)',
         bibFile: '.bib filename',
       },
       dialogues: {

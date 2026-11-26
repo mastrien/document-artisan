@@ -147,15 +147,28 @@ describe('latexGenerator', () => {
     expect(multiCls).not.toContain('twocolumn');
   });
 
-  it('configures ABNT biblatex + biber and dialogue macros properly', () => {
+  it('configures ABNT biblatex + biber (NBR 10520:2023 titlecase by default, legacy uppercase optional) and dialogue macros', () => {
     const cfg = cloneConfig();
-    cfg.modules.citations = { enabled: true, style: 'abnt', bibFile: 'refs.bib' };
+    cfg.modules.citations = {
+      enabled: true,
+      style: 'abnt',
+      abntCiteCase: 'titlecase',
+      bibFile: 'refs.bib',
+    };
     cfg.modules.dialogues = { enabled: true, style: 'literary', speakerBold: true, indentMm: 6 };
-    const cls = buildClassFile(cfg);
-    expect(cls).toContain('\\RequirePackage[backend=biber, style=abnt, sorting=nyt]{biblatex}');
-    expect(cls).toContain('\\addbibresource{refs.bib}');
-    expect(cls).toContain('\\newcommand{\\fala}');
-    expect(cls).toContain('\\newcommand{\\dialogo}');
+    const clsTitle = buildClassFile(cfg);
+    expect(clsTitle).toContain(
+      '\\RequirePackage[backend=biber, style=abnt, accite=false, sorting=nyt]{biblatex}'
+    );
+    expect(clsTitle).toContain('\\addbibresource{refs.bib}');
+    expect(clsTitle).toContain('\\newcommand{\\fala}');
+    expect(clsTitle).toContain('\\newcommand{\\dialogo}');
+
+    cfg.modules.citations.abntCiteCase = 'uppercase';
+    const clsUpper = buildClassFile(cfg);
+    expect(clsUpper).toContain(
+      '\\RequirePackage[backend=biber, style=abnt, accite=true, sorting=nyt]{biblatex}'
+    );
   });
 
   it('handles Beamer slides without emitting geometry, fancyhdr, xcolor clash, or caption conflicts', () => {

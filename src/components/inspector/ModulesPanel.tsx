@@ -12,6 +12,7 @@ import {
 import { useI18n } from '../../i18n/LanguageContext';
 import { useTemplate } from '../../state/TemplateContext';
 import {
+  AbntCitationCase,
   CaptionSeparator,
   CitationStyle,
   DialogueStyle,
@@ -570,6 +571,26 @@ export const ModulesPanel: React.FC = () => {
             })
           }
         />
+        {m.citations.style === 'abnt' && (
+          <div className="space-y-1">
+            <span className="text-xs font-medium text-[var(--studio-text)] block">
+              {t.modules.citations.abntCase}
+            </span>
+            <SegmentedControl<AbntCitationCase>
+              value={m.citations.abntCiteCase}
+              onChange={(abntCiteCase) =>
+                updateConfig('modules', {
+                  ...m,
+                  citations: { ...m.citations, abntCiteCase },
+                })
+              }
+              options={[
+                { value: 'titlecase', label: t.modules.citations.abntTitlecase },
+                { value: 'uppercase', label: t.modules.citations.abntUppercase },
+              ]}
+            />
+          </div>
+        )}
       </ModuleCard>
 
       {/* Dialogues */}

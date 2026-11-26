@@ -26,6 +26,7 @@ export type HeaderFooterToken =
 export type PageNumberStyle = 'arabic' | 'roman' | 'Roman' | 'alph' | 'none';
 export type SectionNumberStyle = 'arabic' | 'roman' | 'none';
 export type CitationStyle = 'abnt' | 'apa' | 'ieee' | 'vancouver' | 'authoryear' | 'numeric';
+export type AbntCitationCase = 'titlecase' | 'uppercase';
 export type DialogueStyle = 'literary' | 'script' | 'interview';
 export type TableStyle = 'booktabs' | 'abnt-open' | 'striped' | 'grid' | 'horizontal';
 export type CaptionSeparator = 'colon' | 'endash' | 'emdash' | 'period';
@@ -297,6 +298,7 @@ export interface TemplateConfig {
     citations: {
       enabled: boolean;
       style: CitationStyle;
+      abntCiteCase: AbntCitationCase;
       bibFile: string;
     };
     dialogues: {
