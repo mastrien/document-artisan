@@ -18,7 +18,7 @@ function buildHeadingCss(
   letterSpacingEm: number,
   ptToPx: number
 ): React.CSSProperties {
-  return {
+  const base: React.CSSProperties = {
     fontFamily,
     fontSize: `${style.fontSizePt * ptToPx}px`,
     fontWeight: style.bold ? 700 : 400,
@@ -30,6 +30,29 @@ function buildHeadingCss(
     color: style.color,
     marginTop: `${style.spaceBeforePt * ptToPx}px`,
     marginBottom: `${style.spaceAfterPt * ptToPx}px`,
+  };
+
+  if (style.decoration === 'box') {
+    const bw = style.box.borderWidthPt * ptToPx;
+    return {
+      ...base,
+      display: style.box.fullWidth ? 'block' : 'table',
+      marginLeft:
+        !style.box.fullWidth && (style.alignment === 'center' || style.alignment === 'right')
+          ? 'auto'
+          : undefined,
+      marginRight: !style.box.fullWidth && style.alignment === 'center' ? 'auto' : undefined,
+      backgroundColor: style.box.bgColor,
+      padding: `${style.box.paddingYPt * ptToPx}px ${style.box.paddingXPt * ptToPx}px`,
+      borderRadius: `${style.box.radiusPt * ptToPx}px`,
+      borderStyle: 'solid',
+      borderColor: style.box.borderColor,
+      borderWidth: style.box.borderLeftOnly ? `0 0 0 ${bw}px` : `${bw}px`,
+    };
+  }
+
+  return {
+    ...base,
     borderBottom: style.decoration === 'bottomRule' ? `1px solid ${style.color}` : 'none',
     paddingBottom: style.decoration === 'bottomRule' ? '2px' : undefined,
   };

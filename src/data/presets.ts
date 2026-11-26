@@ -1,8 +1,20 @@
 import {
   FirstPageHeaderFooterConfig,
   HeaderFooterLogoConfig,
+  HeadingBoxStyle,
   TemplateConfig,
 } from '../types/template';
+
+export const DEFAULT_HEADING_BOX: HeadingBoxStyle = {
+  bgColor: '#f1f5f9',
+  borderColor: '#0f766e',
+  borderWidthPt: 0.8,
+  borderLeftOnly: false,
+  paddingYPt: 5,
+  paddingXPt: 8,
+  radiusPt: 2,
+  fullWidth: true,
+};
 
 export interface PresetDefinition {
   id: string;
@@ -142,6 +154,7 @@ export const PRESETS: PresetDefinition[] = [
             spaceBeforePt: 14,
             spaceAfterPt: 8,
             decoration: 'none',
+            box: { ...DEFAULT_HEADING_BOX, bgColor: '#f3f4f6', borderColor: '#111827' },
             numberSeparator: 'space',
           },
           h2: {
@@ -154,6 +167,7 @@ export const PRESETS: PresetDefinition[] = [
             spaceBeforePt: 12,
             spaceAfterPt: 6,
             decoration: 'none',
+            box: { ...DEFAULT_HEADING_BOX, bgColor: '#f3f4f6', borderColor: '#111827' },
             numberSeparator: 'space',
           },
           h3: {
@@ -166,6 +180,7 @@ export const PRESETS: PresetDefinition[] = [
             spaceBeforePt: 10,
             spaceAfterPt: 4,
             decoration: 'none',
+            box: { ...DEFAULT_HEADING_BOX, bgColor: '#f3f4f6', borderColor: '#111827' },
             numberSeparator: 'space',
           },
         },
@@ -362,6 +377,7 @@ export const PRESETS: PresetDefinition[] = [
             spaceBeforePt: 12,
             spaceAfterPt: 6,
             decoration: 'none',
+            box: { ...DEFAULT_HEADING_BOX, bgColor: '#eff6ff', borderColor: '#1d4ed8' },
             numberSeparator: 'dot',
           },
           h2: {
@@ -374,6 +390,7 @@ export const PRESETS: PresetDefinition[] = [
             spaceBeforePt: 9,
             spaceAfterPt: 4,
             decoration: 'none',
+            box: { ...DEFAULT_HEADING_BOX, bgColor: '#eff6ff', borderColor: '#1d4ed8' },
             numberSeparator: 'dot',
           },
           h3: {
@@ -386,6 +403,7 @@ export const PRESETS: PresetDefinition[] = [
             spaceBeforePt: 7,
             spaceAfterPt: 3,
             decoration: 'none',
+            box: { ...DEFAULT_HEADING_BOX, bgColor: '#eff6ff', borderColor: '#1d4ed8' },
             numberSeparator: 'space',
           },
         },
@@ -582,6 +600,7 @@ export const PRESETS: PresetDefinition[] = [
             spaceBeforePt: 14,
             spaceAfterPt: 6,
             decoration: 'leftBar',
+            box: { ...DEFAULT_HEADING_BOX, bgColor: '#f0fdfa', borderColor: '#0f766e' },
             numberSeparator: 'space',
           },
           h2: {
@@ -594,6 +613,7 @@ export const PRESETS: PresetDefinition[] = [
             spaceBeforePt: 10,
             spaceAfterPt: 5,
             decoration: 'none',
+            box: { ...DEFAULT_HEADING_BOX, bgColor: '#f0fdfa', borderColor: '#0f766e' },
             numberSeparator: 'space',
           },
           h3: {
@@ -606,6 +626,7 @@ export const PRESETS: PresetDefinition[] = [
             spaceBeforePt: 8,
             spaceAfterPt: 3,
             decoration: 'none',
+            box: { ...DEFAULT_HEADING_BOX, bgColor: '#f0fdfa', borderColor: '#0f766e' },
             numberSeparator: 'space',
           },
         },
@@ -828,6 +849,7 @@ export const PRESETS: PresetDefinition[] = [
             spaceBeforePt: 18,
             spaceAfterPt: 10,
             decoration: 'bottomRule',
+            box: { ...DEFAULT_HEADING_BOX, bgColor: '#fef3c7', borderColor: '#7c2d12' },
             numberSeparator: 'dash',
           },
           h2: {
@@ -840,6 +862,7 @@ export const PRESETS: PresetDefinition[] = [
             spaceBeforePt: 12,
             spaceAfterPt: 6,
             decoration: 'none',
+            box: { ...DEFAULT_HEADING_BOX, bgColor: '#fef3c7', borderColor: '#7c2d12' },
             numberSeparator: 'space',
           },
           h3: {
@@ -852,6 +875,7 @@ export const PRESETS: PresetDefinition[] = [
             spaceBeforePt: 9,
             spaceAfterPt: 4,
             decoration: 'none',
+            box: { ...DEFAULT_HEADING_BOX, bgColor: '#fef3c7', borderColor: '#7c2d12' },
             numberSeparator: 'space',
           },
         },
@@ -1048,6 +1072,7 @@ export const PRESETS: PresetDefinition[] = [
             spaceBeforePt: 16,
             spaceAfterPt: 7,
             decoration: 'leftBar',
+            box: { ...DEFAULT_HEADING_BOX, bgColor: '#f0fdfa', borderColor: '#0f766e' },
             numberSeparator: 'space',
           },
           h2: {
@@ -1060,6 +1085,7 @@ export const PRESETS: PresetDefinition[] = [
             spaceBeforePt: 12,
             spaceAfterPt: 5,
             decoration: 'bottomRule',
+            box: { ...DEFAULT_HEADING_BOX, bgColor: '#f0fdfa', borderColor: '#0f766e' },
             numberSeparator: 'space',
           },
           h3: {
@@ -1072,6 +1098,7 @@ export const PRESETS: PresetDefinition[] = [
             spaceBeforePt: 9,
             spaceAfterPt: 4,
             decoration: 'none',
+            box: { ...DEFAULT_HEADING_BOX, bgColor: '#f0fdfa', borderColor: '#0f766e' },
             numberSeparator: 'space',
           },
         },
@@ -1268,6 +1295,7 @@ export const PRESETS: PresetDefinition[] = [
             spaceBeforePt: 8,
             spaceAfterPt: 6,
             decoration: 'leftBar',
+            box: { ...DEFAULT_HEADING_BOX, bgColor: '#fffbeb', borderColor: '#b45309' },
             numberSeparator: 'space',
           },
           h2: {
@@ -1280,6 +1308,7 @@ export const PRESETS: PresetDefinition[] = [
             spaceBeforePt: 6,
             spaceAfterPt: 4,
             decoration: 'none',
+            box: { ...DEFAULT_HEADING_BOX, bgColor: '#fffbeb', borderColor: '#b45309' },
             numberSeparator: 'space',
           },
           h3: {
@@ -1292,6 +1321,7 @@ export const PRESETS: PresetDefinition[] = [
             spaceBeforePt: 4,
             spaceAfterPt: 2,
             decoration: 'none',
+            box: { ...DEFAULT_HEADING_BOX, bgColor: '#fffbeb', borderColor: '#b45309' },
             numberSeparator: 'space',
           },
         },

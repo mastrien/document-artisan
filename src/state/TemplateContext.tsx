@@ -116,9 +116,21 @@ export function sanitizeStoredConfig(parsed: Partial<TemplateConfig>): TemplateC
       ...parsed.typography,
       titleBlock: { ...def.typography.titleBlock, ...parsed.typography?.titleBlock },
       headings: {
-        h1: { ...def.typography.headings.h1, ...parsed.typography?.headings?.h1 },
-        h2: { ...def.typography.headings.h2, ...parsed.typography?.headings?.h2 },
-        h3: { ...def.typography.headings.h3, ...parsed.typography?.headings?.h3 },
+        h1: {
+          ...def.typography.headings.h1,
+          ...parsed.typography?.headings?.h1,
+          box: { ...def.typography.headings.h1.box, ...parsed.typography?.headings?.h1?.box },
+        },
+        h2: {
+          ...def.typography.headings.h2,
+          ...parsed.typography?.headings?.h2,
+          box: { ...def.typography.headings.h2.box, ...parsed.typography?.headings?.h2?.box },
+        },
+        h3: {
+          ...def.typography.headings.h3,
+          ...parsed.typography?.headings?.h3,
+          box: { ...def.typography.headings.h3.box, ...parsed.typography?.headings?.h3?.box },
+        },
       },
     },
     headerFooter: {

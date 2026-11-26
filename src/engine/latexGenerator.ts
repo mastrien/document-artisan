@@ -628,10 +628,20 @@ function buildPageGeometryAndColumns(config: TemplateConfig): string[] {
   return lines;
 }
 
+function hasBoxedHeading(config: TemplateConfig): boolean {
+  const { h1, h2, h3 } = config.typography.headings;
+  return (
+    config.documentType !== 'slides' &&
+    (h1.decoration === 'box' || h2.decoration === 'box' || h3.decoration === 'box')
+  );
+}
+
 function formatHeadingLevel(
   cmd: '\\section' | '\\subsection' | '\\subsubsection',
   style: HeadingLevelStyle,
   colorName: string,
+  boxBgName: string,
+  boxBorderName: string,
   fontCmd: string
 ): string[] {
   const alignCmd =
@@ -644,7 +654,7 @@ function formatHeadingLevel(
   const weightCmd = style.bold ? '\\bfseries' : '\\mdseries';
   const italicCmd = style.italic ? '\\itshape' : '';
   const scCmd = style.transform === 'smallcaps' ? '\\scshape' : '';
-  const upperCmd = style.transform === 'uppercase' ? '\\MakeUppercase' : '';
+  const titleArg = style.transform === 'uppercase' ? '\\MakeUppercase{#1}' : '#1';
 
   const labelNum =
     cmd === '\\section'
@@ -659,15 +669,49 @@ function formatHeadingLevel(
         ? ' --'
         : '';
 
+  if (style.decoration === 'box') {
+    const b = style.box;
+    const ruleOpts = b.borderLeftOnly
+      ? `boxrule=0pt, leftrule=${b.borderWidthPt}pt`
+      : `boxrule=${b.borderWidthPt}pt`;
+    const commonOpts = [
+      'enhanced',
+      'nobeforeafter',
+      'boxsep=0pt',
+      `top=${b.paddingYPt}pt`,
+      `bottom=${b.paddingYPt}pt`,
+      `left=${b.paddingXPt}pt`,
+      `right=${b.paddingXPt}pt`,
+      `colback=${boxBgName}`,
+      `colframe=${boxBorderName}`,
+      `arc=${b.radiusPt}pt`,
+      ruleOpts,
+    ];
+    const fmtPrefix = `${alignCmd}${fontCmd}${sizeCmd}${weightCmd}${italicCmd}${scCmd}\\color{${colorName}}`;
+
+    const wrapContent = (inner: string) =>
+      b.fullWidth
+        ? `\\begin{tcolorbox}[${commonOpts.join(', ')}, width=\\linewidth, halign=${style.alignment}]${inner}\\end{tcolorbox}`
+        : `\\tcbox[${commonOpts.join(', ')}]{${inner}}`;
+
+    return [
+      `\\titleformat{${cmd}}{${fmtPrefix}}{}{0pt}{${wrapContent(`${labelNum}${sepToken}\\hspace{0.45em}${titleArg}`)}}`,
+      `\\titleformat{name=${cmd}, numberless}{${fmtPrefix}}{}{0pt}{${wrapContent(titleArg)}}`,
+      `\\titlespacing*{${cmd}}{0pt}{${style.spaceBeforePt}pt}{${style.spaceAfterPt}pt}`,
+    ];
+  }
+
   const barPrefix =
     style.decoration === 'leftBar'
       ? `{\\color{${colorName}}\\rule[-0.15em]{2.5pt}{1.05em}}\\hspace{0.45em}`
       : '';
   const bottomTrailer =
-    style.decoration === 'bottomRule' ? `[\\vspace{2pt}{\\color{${colorName}}\\titlerule[0.6pt]}]` : '';
+    style.decoration === 'bottomRule'
+      ? `[\\vspace{2pt}{\\color{${colorName}}\\titlerule[0.6pt]}]`
+      : '';
 
   return [
-    `\\titleformat{${cmd}}{${alignCmd}${fontCmd}${sizeCmd}${weightCmd}${italicCmd}${scCmd}\\color{${colorName}}}{${barPrefix}${labelNum}${sepToken}}{0.5em}{${upperCmd}}${bottomTrailer}`,
+    `\\titleformat{${cmd}}{${alignCmd}${fontCmd}${sizeCmd}${weightCmd}${italicCmd}${scCmd}\\color{${colorName}}}{${barPrefix}${labelNum}${sepToken}}{0.5em}{${titleArg}}${bottomTrailer}`,
     `\\titlespacing*{${cmd}}{0pt}{${style.spaceBeforePt}pt}{${style.spaceAfterPt}pt}`,
   ];
 }
@@ -690,8 +734,14 @@ function buildTypographyAndHeadingsBlock(config: TemplateConfig): string[] {
   lines.push(`\\definecolor{artisanTitleColor}{HTML}{${hexToRgbDigits(t.titleBlock.color)}}`);
   lines.push(`\\definecolor{artisanTitleRule}{HTML}{${hexToRgbDigits(t.titleBlock.dividerColor)}}`);
   lines.push(`\\definecolor{artisanH1}{HTML}{${hexToRgbDigits(t.headings.h1.color)}}`);
+  lines.push(`\\definecolor{artisanH1BoxBg}{HTML}{${hexToRgbDigits(t.headings.h1.box.bgColor)}}`);
+  lines.push(`\\definecolor{artisanH1BoxBorder}{HTML}{${hexToRgbDigits(t.headings.h1.box.borderColor)}}`);
   lines.push(`\\definecolor{artisanH2}{HTML}{${hexToRgbDigits(t.headings.h2.color)}}`);
+  lines.push(`\\definecolor{artisanH2BoxBg}{HTML}{${hexToRgbDigits(t.headings.h2.box.bgColor)}}`);
+  lines.push(`\\definecolor{artisanH2BoxBorder}{HTML}{${hexToRgbDigits(t.headings.h2.box.borderColor)}}`);
   lines.push(`\\definecolor{artisanH3}{HTML}{${hexToRgbDigits(t.headings.h3.color)}}`);
+  lines.push(`\\definecolor{artisanH3BoxBg}{HTML}{${hexToRgbDigits(t.headings.h3.box.bgColor)}}`);
+  lines.push(`\\definecolor{artisanH3BoxBorder}{HTML}{${hexToRgbDigits(t.headings.h3.box.borderColor)}}`);
   lines.push(`\\definecolor{artisanHeaderText}{HTML}{${hexToRgbDigits(hf.headerColor)}}`);
   lines.push(`\\definecolor{artisanHeaderRule}{HTML}{${hexToRgbDigits(hf.headerRuleColor)}}`);
   lines.push(`\\definecolor{artisanHeaderBg}{HTML}{${hexToRgbDigits(hf.headerBgColor)}}`);
@@ -785,10 +835,40 @@ function buildTypographyAndHeadingsBlock(config: TemplateConfig): string[] {
       lines.push('\\setcounter{secnumdepth}{0}');
     }
 
-    lines.push('\\RequirePackage{titlesec}');
-    lines.push(...formatHeadingLevel('\\section', t.headings.h1, 'artisanH1', '\\headingfont'));
-    lines.push(...formatHeadingLevel('\\subsection', t.headings.h2, 'artisanH2', '\\headingfont'));
-    lines.push(...formatHeadingLevel('\\subsubsection', t.headings.h3, 'artisanH3', '\\headingfont'));
+    if (hasBoxedHeading(config)) {
+      lines.push('\\RequirePackage[most]{tcolorbox}');
+    }
+    lines.push('\\RequirePackage[explicit]{titlesec}');
+    lines.push(
+      ...formatHeadingLevel(
+        '\\section',
+        t.headings.h1,
+        'artisanH1',
+        'artisanH1BoxBg',
+        'artisanH1BoxBorder',
+        '\\headingfont'
+      )
+    );
+    lines.push(
+      ...formatHeadingLevel(
+        '\\subsection',
+        t.headings.h2,
+        'artisanH2',
+        'artisanH2BoxBg',
+        'artisanH2BoxBorder',
+        '\\headingfont'
+      )
+    );
+    lines.push(
+      ...formatHeadingLevel(
+        '\\subsubsection',
+        t.headings.h3,
+        'artisanH3',
+        'artisanH3BoxBg',
+        'artisanH3BoxBorder',
+        '\\headingfont'
+      )
+    );
   }
 
   return lines;
@@ -1014,7 +1094,9 @@ function buildModulesBlock(config: TemplateConfig): string[] {
 
   if (m.callouts.enabled) {
     lines.push('% [Module: Callout Boxes]');
-    lines.push('\\RequirePackage[most]{tcolorbox}');
+    if (!hasBoxedHeading(config)) {
+      lines.push('\\RequirePackage[most]{tcolorbox}');
+    }
     lines.push('\\newtcolorbox{calloutbox}[1][]{');
     lines.push('  enhanced,');
     lines.push('  colback=artisanAccent!5,');

@@ -85,6 +85,19 @@ export interface CustomFontFamily {
   variants: Partial<Record<FontVariantKey, CustomFontVariantFile>>;
 }
 
+export type HeadingDecoration = 'none' | 'leftBar' | 'bottomRule' | 'box';
+
+export interface HeadingBoxStyle {
+  bgColor: string;
+  borderColor: string;
+  borderWidthPt: number;
+  borderLeftOnly: boolean;
+  paddingYPt: number;
+  paddingXPt: number;
+  radiusPt: number;
+  fullWidth: boolean;
+}
+
 export interface HeadingLevelStyle {
   fontSizePt: number;
   bold: boolean;
@@ -94,7 +107,8 @@ export interface HeadingLevelStyle {
   color: string;
   spaceBeforePt: number;
   spaceAfterPt: number;
-  decoration: 'none' | 'leftBar' | 'bottomRule';
+  decoration: HeadingDecoration;
+  box: HeadingBoxStyle;
   numberSeparator: 'space' | 'dot' | 'dash';
 }
 

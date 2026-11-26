@@ -226,4 +226,41 @@ describe('latexGenerator', () => {
     expect(paths).toContain('package-version/artigo-abnt.sty');
     expect(paths).toContain('package-version/main.tex');
   });
+
+  it('generates tcolorbox boxed headings for H1/H2 without loading tcolorbox twice', () => {
+    const cfg = cloneConfig();
+    cfg.modules.callouts.enabled = true;
+    cfg.typography.headings.h1.decoration = 'box';
+    cfg.typography.headings.h1.box = {
+      bgColor: '#1e3a8a',
+      borderColor: '#1e40af',
+      borderWidthPt: 1,
+      borderLeftOnly: false,
+      paddingYPt: 6,
+      paddingXPt: 10,
+      radiusPt: 3,
+      fullWidth: true,
+    };
+    cfg.typography.headings.h2.decoration = 'box';
+    cfg.typography.headings.h2.box = {
+      bgColor: '#eff6ff',
+      borderColor: '#1d4ed8',
+      borderWidthPt: 2.5,
+      borderLeftOnly: true,
+      paddingYPt: 4,
+      paddingXPt: 8,
+      radiusPt: 0,
+      fullWidth: false,
+    };
+
+    const cls = buildClassFile(cfg);
+    expect(cls).toContain('\\RequirePackage[explicit]{titlesec}');
+    expect(cls).toContain('\\definecolor{artisanH1BoxBg}{HTML}{1E3A8A}');
+    expect(cls).toContain('\\begin{tcolorbox}');
+    expect(cls).toContain('\\tcbox[');
+    expect(cls).toContain('leftrule=2.5pt');
+    expect(cls).toContain('name=\\section, numberless');
+    const tcolorboxMatches = cls.match(/\\RequirePackage\[most\]\{tcolorbox\}/g) ?? [];
+    expect(tcolorboxMatches).toHaveLength(1);
+  });
 });

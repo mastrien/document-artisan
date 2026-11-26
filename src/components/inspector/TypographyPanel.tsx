@@ -3,7 +3,7 @@ import { AlertTriangle, Plus, Trash2, Upload } from 'lucide-react';
 import { FONT_CATALOG } from '../../data/fonts';
 import { useI18n } from '../../i18n/LanguageContext';
 import { useTemplate } from '../../state/TemplateContext';
-import { FontVariantKey, HeadingLevelStyle } from '../../types/template';
+import { FontVariantKey } from '../../types/template';
 import {
   ColorPickerField,
   PanelSection,
@@ -12,9 +12,9 @@ import {
   SliderField,
   ToggleSwitch,
 } from '../ui/Controls';
+import { HeadingStyleEditor } from './HeadingStyleEditor';
 
 type TypoSubTab = 'fonts' | 'body' | 'headings' | 'colors';
-type HeadingKey = 'h1' | 'h2' | 'h3';
 
 export const TypographyPanel: React.FC = () => {
   const { t } = useI18n();
@@ -28,7 +28,6 @@ export const TypographyPanel: React.FC = () => {
   const typo = config.typography;
 
   const [subTab, setSubTab] = useState<TypoSubTab>('fonts');
-  const [activeHeading, setActiveHeading] = useState<HeadingKey>('h1');
   const [systemFontDraft, setSystemFontDraft] = useState('');
 
   const multiFileRef = useRef<HTMLInputElement | null>(null);
@@ -85,17 +84,6 @@ export const TypographyPanel: React.FC = () => {
       typo.captionFontId,
     ].some((id) => id.startsWith('system:') || id.startsWith('custom:'));
 
-  const updateHeadingLevel = (patch: Partial<HeadingLevelStyle>) => {
-    updateConfig('typography', {
-      ...typo,
-      headings: {
-        ...typo.headings,
-        [activeHeading]: { ...typo.headings[activeHeading], ...patch },
-      },
-    });
-  };
-
-  const hStyle = typo.headings[activeHeading];
   const tb = typo.titleBlock;
 
   return (
@@ -536,117 +524,7 @@ export const TypographyPanel: React.FC = () => {
             />
           </PanelSection>
 
-          <PanelSection title={t.typography.headingsTitle}>
-            <SegmentedControl<HeadingKey>
-              value={activeHeading}
-              onChange={setActiveHeading}
-              options={[
-                { value: 'h1', label: 'H1 (Seção)' },
-                { value: 'h2', label: 'H2 (Sub)' },
-                { value: 'h3', label: 'H3 (Sub-sub)' },
-              ]}
-            />
-
-            <SliderField
-              label={t.typography.headingSize}
-              value={hStyle.fontSizePt}
-              min={9}
-              max={24}
-              step={0.5}
-              decimals={1}
-              unit=" pt"
-              onChange={(fontSizePt) => updateHeadingLevel({ fontSizePt })}
-            />
-
-            <div className="grid grid-cols-2 gap-2">
-              <ToggleSwitch
-                label={t.typography.headingBold}
-                checked={hStyle.bold}
-                onChange={(bold) => updateHeadingLevel({ bold })}
-              />
-              <ToggleSwitch
-                label={t.typography.headingItalic}
-                checked={hStyle.italic}
-                onChange={(italic) => updateHeadingLevel({ italic })}
-              />
-            </div>
-
-            <SegmentedControl<'none' | 'uppercase' | 'smallcaps'>
-              value={hStyle.transform}
-              onChange={(transform) => updateHeadingLevel({ transform })}
-              options={[
-                { value: 'none', label: t.typography.transformNone },
-                { value: 'uppercase', label: t.typography.transformUpper },
-                { value: 'smallcaps', label: t.typography.transformSmallcaps },
-              ]}
-            />
-
-            <SegmentedControl<'left' | 'center' | 'right'>
-              value={hStyle.alignment}
-              onChange={(alignment) => updateHeadingLevel({ alignment })}
-              options={[
-                { value: 'left', label: t.typography.left },
-                { value: 'center', label: t.typography.center },
-                { value: 'right', label: t.typography.right },
-              ]}
-            />
-
-            <div className="space-y-1">
-              <span className="text-xs font-medium text-[var(--studio-text)] block">
-                {t.typography.headingDecoration}
-              </span>
-              <SegmentedControl<'none' | 'leftBar' | 'bottomRule'>
-                value={hStyle.decoration}
-                onChange={(decoration) => updateHeadingLevel({ decoration })}
-                options={[
-                  { value: 'none', label: t.typography.decoNone },
-                  { value: 'leftBar', label: t.typography.decoLeftBar },
-                  { value: 'bottomRule', label: t.typography.decoBottomRule },
-                ]}
-              />
-            </div>
-
-            <SelectField
-              label={t.typography.numberSep}
-              value={hStyle.numberSeparator}
-              options={[
-                { value: 'space', label: t.typography.sepSpace },
-                { value: 'dot', label: t.typography.sepDot },
-                { value: 'dash', label: t.typography.sepDash },
-              ]}
-              onChange={(v) =>
-                updateHeadingLevel({ numberSeparator: v as HeadingLevelStyle['numberSeparator'] })
-              }
-            />
-
-            <div className="grid grid-cols-2 gap-2">
-              <SliderField
-                label={t.typography.spaceBefore}
-                value={hStyle.spaceBeforePt}
-                min={0}
-                max={32}
-                step={1}
-                unit="pt"
-                onChange={(spaceBeforePt) => updateHeadingLevel({ spaceBeforePt })}
-              />
-              <SliderField
-                label={t.typography.spaceAfter}
-                value={hStyle.spaceAfterPt}
-                min={0}
-                max={24}
-                step={1}
-                unit="pt"
-                onChange={(spaceAfterPt) => updateHeadingLevel({ spaceAfterPt })}
-              />
-            </div>
-
-            <ColorPickerField
-              label={t.typography.textColor}
-              value={hStyle.color}
-              swatches={['#111827', '#92400e', '#1d4ed8', '#0f766e', '#7c2d12', '#475569']}
-              onChange={(color) => updateHeadingLevel({ color })}
-            />
-          </PanelSection>
+          <HeadingStyleEditor />
         </>
       )}
 
