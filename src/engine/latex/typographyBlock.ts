@@ -1,5 +1,9 @@
 import { HeadingLevelStyle, TemplateConfig } from '../../types/template';
-import { escapeLatex, hexToRgbDigits, needsTcolorboxInTypography } from './utils';
+import { hexToRgbDigits, needsTcolorboxInTypography } from './utils';
+
+function alignLatexCmd(align: 'left' | 'center' | 'right'): string {
+  return align === 'center' ? '\\centering' : align === 'right' ? '\\raggedleft' : '\\raggedright';
+}
 
 export function formatHeadingLevel(
   cmd: '\\section' | '\\subsection' | '\\subsubsection',
@@ -50,6 +54,8 @@ export function formatHeadingLevel(
       `colback=${boxBgName}`,
       `colframe=${boxBorderName}`,
       `arc=${b.radiusPt}pt`,
+      `outer arc=${b.radiusPt}pt`,
+      ...(b.radiusPt === 0 ? ['sharp corners'] : []),
       ruleOpts,
     ];
     const fmtPrefix = `${alignCmd}${fontCmd}${sizeCmd}${weightCmd}${italicCmd}${scCmd}\\color{${colorName}}`;
@@ -98,6 +104,8 @@ export function buildTypographyAndHeadingsBlock(config: TemplateConfig): string[
   lines.push(`\\definecolor{artisanPageFrame}{HTML}{${hexToRgbDigits(config.page.pageFrame.color)}}`);
   lines.push(`\\definecolor{artisanTitleColor}{HTML}{${hexToRgbDigits(t.titleBlock.color)}}`);
   lines.push(`\\definecolor{artisanTitleRule}{HTML}{${hexToRgbDigits(t.titleBlock.dividerColor)}}`);
+  lines.push(`\\definecolor{artisanTitleBoxBg}{HTML}{${hexToRgbDigits(t.titleBlock.box.bgColor)}}`);
+  lines.push(`\\definecolor{artisanTitleBoxBorder}{HTML}{${hexToRgbDigits(t.titleBlock.box.borderColor)}}`);
   lines.push(`\\definecolor{artisanH1}{HTML}{${hexToRgbDigits(t.headings.h1.color)}}`);
   lines.push(`\\definecolor{artisanH1BoxBg}{HTML}{${hexToRgbDigits(t.headings.h1.box.bgColor)}}`);
   lines.push(`\\definecolor{artisanH1BoxBorder}{HTML}{${hexToRgbDigits(t.headings.h1.box.borderColor)}}`);
@@ -163,25 +171,67 @@ export function buildTypographyAndHeadingsBlock(config: TemplateConfig): string[
     lines.push('');
     lines.push('% --- Custom Title Block ---');
     const tb = t.titleBlock;
-    const tbAlign =
-      tb.alignment === 'center'
-        ? '\\centering'
-        : tb.alignment === 'right'
-          ? '\\raggedleft'
-          : '\\raggedright';
+    const tbAlign = alignLatexCmd(tb.alignment);
+    const metaAlign = alignLatexCmd(tb.metaAlignment);
     const tbWeight = Number(tb.weight) >= 600 ? '\\bfseries' : '\\mdseries';
     const tbUpper = tb.transform === 'uppercase' ? '\\MakeUppercase' : '';
     const tbSc = tb.transform === 'smallcaps' ? '\\scshape' : '';
+    const titleInner = [
+      `    \\ifdefempty{\\@artisandocumentcode}{}{${tbAlign}\\fontsize{9}{11}\\selectfont\\bfseries\\color{artisanAccent}\\@artisandocumentcode\\par\\vspace{3pt}}`,
+      `    {${tbAlign}\\titlefont\\fontsize{${tb.fontSizePt}}{${(tb.fontSizePt * 1.18).toFixed(1)}}\\selectfont${tbWeight}${tb.italic ? '\\itshape' : ''}${tbSc}\\color{artisanTitleColor}${tbUpper}{\\@title}\\par}`,
+      `    \\ifdefempty{\\@artisansubtitle}{}{\\vspace{4pt}{${tbAlign}\\fontsize{${tb.subtitleSizePt}}{${(tb.subtitleSizePt * 1.2).toFixed(1)}}\\selectfont${tb.subtitleItalic ? '\\itshape' : ''}\\color{artisanMuted}\\@artisansubtitle\\par}}`,
+    ];
+
     lines.push('\\makeatletter');
     lines.push('\\renewcommand{\\maketitle}{%');
     lines.push('  {\\par\\begingroup\\setlength{\\parindent}{0pt}');
-    lines.push(`    {${tbAlign}\\titlefont\\fontsize{${tb.fontSizePt}}{${(tb.fontSizePt * 1.18).toFixed(1)}}\\selectfont${tbWeight}${tb.italic ? '\\itshape' : ''}${tbSc}\\color{artisanTitleColor}${tbUpper}{\\@title}\\par}`);
-    if (config.metadata.subtitle) {
-      lines.push(`    \\vspace{4pt}{${tbAlign}\\fontsize{${tb.subtitleSizePt}}{${(tb.subtitleSizePt * 1.2).toFixed(1)}}\\selectfont${tb.subtitleItalic ? '\\itshape' : ''}\\color{artisanMuted}${escapeLatex(config.metadata.subtitle)}\\par}`);
+    if (tb.box.enabled) {
+      const b = tb.box;
+      const ruleOpts = b.borderLeftOnly
+        ? `boxrule=0pt, leftrule=${b.borderWidthPt}pt`
+        : `boxrule=${b.borderWidthPt}pt`;
+      const boxOpts = [
+        'enhanced',
+        'nobeforeafter',
+        'boxsep=0pt',
+        `top=${b.paddingYPt}pt`,
+        `bottom=${b.paddingYPt}pt`,
+        `left=${b.paddingXPt}pt`,
+        `right=${b.paddingXPt}pt`,
+        'colback=artisanTitleBoxBg',
+        'colframe=artisanTitleBoxBorder',
+        `arc=${b.radiusPt}pt`,
+        `outer arc=${b.radiusPt}pt`,
+        ...(b.radiusPt === 0 ? ['sharp corners'] : []),
+        ruleOpts,
+        'width=\\linewidth',
+        `halign=${tb.alignment}`,
+      ];
+      lines.push(`    \\begin{tcolorbox}[${boxOpts.join(', ')}]`);
+      lines.push(...titleInner.map((l) => `  ${l}`));
+      lines.push('    \\end{tcolorbox}\\par');
+    } else {
+      lines.push(...titleInner);
     }
     lines.push(
-      `    \\vspace{6pt}{${tbAlign}\\fontsize{${tb.metaSizePt}}{${(tb.metaSizePt * 1.25).toFixed(1)}}\\selectfont\\color{artisanText}\\@author${tb.metaLayout === 'stacked' ? '\\\\' : ' \\textperiodcentered\\ '}${escapeLatex(config.metadata.institution)}${tb.metaLayout === 'stacked' ? '\\\\' : ' \\textperiodcentered\\ '}\\@date\\par}`
+      `    \\vspace{8pt}{${metaAlign}\\fontsize{${tb.metaSizePt}}{${(tb.metaSizePt * 1.25).toFixed(1)}}\\selectfont\\color{artisanText}`
     );
+    if (tb.metaLayout === 'stacked') {
+      lines.push(
+        '      \\ifdefempty{\\@artisanauthorsblock}{\\@author\\ifdefempty{\\@artisaninstitution}{}{\\par\\@artisaninstitution}\\ifdefempty{\\@artisanemail}{}{\\par{\\footnotesize\\@artisanemail}\\par}}{\\@artisanauthorsblock}'
+      );
+      lines.push(
+        '      \\ifdefempty{\\@artisandepartment}{}{\\par\\@artisandepartment}'
+      );
+      lines.push(
+        '      \\ifdefempty{\\@artisanlocation}{\\ifdefempty{\\@artisandocumentdate}{}{\\par\\@artisandocumentdate}}{\\par\\@artisanlocation\\ifdefempty{\\@artisandocumentdate}{}{ \\textperiodcentered\\ \\@artisandocumentdate}}'
+      );
+      lines.push('      \\par}');
+    } else {
+      lines.push(
+        '      \\@author\\ifdefempty{\\@artisaninstitution}{}{ \\textperiodcentered\\ \\@artisaninstitution}\\ifdefempty{\\@artisandepartment}{}{ \\textperiodcentered\\ \\@artisandepartment}\\ifdefempty{\\@artisanemail}{}{ \\textperiodcentered\\ \\@artisanemail}\\ifdefempty{\\@artisanlocation}{}{ \\textperiodcentered\\ \\@artisanlocation} \\textperiodcentered\\ \\@date\\par}'
+      );
+    }
     if (tb.dividerWidthPt > 0) {
       lines.push(`    \\vspace{8pt}{\\color{artisanTitleRule}\\hrule height ${tb.dividerWidthPt}pt}`);
     }

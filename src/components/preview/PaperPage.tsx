@@ -512,60 +512,109 @@ export const PaperPage: React.FC<{
               {!fm.coverPage.enabled && !fm.titleSheet.enabled && (
               <div
                 style={{
-                  textAlign: tb.alignment,
                   marginBottom: `${tb.spaceAfterPt * ptToPx}px`,
                   borderBottomWidth: tb.dividerWidthPt > 0 ? `${tb.dividerWidthPt * ptToPx}px` : 0,
                   borderBottomColor: tb.dividerColor,
                 }}
                 className="pb-2.5 border-solid"
               >
-                {config.documentType === 'book' && (
-                  <div
-                    style={{ color: typo.accentColor, fontFamily: headingFont }}
-                    className="text-[11px] uppercase tracking-[0.2em] font-semibold mb-1.5"
-                  >
-                    {config.metadata.institution}
-                  </div>
-                )}
-                <h1
+                <div
                   style={{
-                    fontFamily: titleFont,
-                    fontSize: `${tb.fontSizePt * ptToPx}px`,
-                    fontWeight: Number(tb.weight),
-                    fontStyle: tb.italic ? 'italic' : 'normal',
-                    textTransform: tb.transform === 'uppercase' ? 'uppercase' : 'none',
-                    fontVariant: tb.transform === 'smallcaps' ? 'small-caps' : 'normal',
-                    letterSpacing: `${typo.headingLetterSpacingEm}em`,
-                    lineHeight: 1.2,
-                    color: tb.color,
+                    textAlign: tb.alignment,
+                    ...(tb.box.enabled
+                      ? {
+                          backgroundColor: tb.box.bgColor,
+                          borderStyle: 'solid',
+                          borderColor: tb.box.borderColor,
+                          borderWidth: tb.box.borderLeftOnly
+                            ? `0 0 0 ${tb.box.borderWidthPt * ptToPx}px`
+                            : `${tb.box.borderWidthPt * ptToPx}px`,
+                          padding: `${tb.box.paddingYPt * ptToPx}px ${tb.box.paddingXPt * ptToPx}px`,
+                          borderRadius: `${tb.box.radiusPt * ptToPx}px`,
+                        }
+                      : {}),
                   }}
                 >
-                  {config.metadata.title}
-                </h1>
-                {config.metadata.subtitle && (
-                  <div
+                  {config.metadata.documentCode && (
+                    <div
+                      style={{ color: typo.accentColor, fontFamily: headingFont }}
+                      className="text-[10px] font-bold uppercase tracking-wider mb-1"
+                    >
+                      {config.metadata.documentCode}
+                    </div>
+                  )}
+                  {config.documentType === 'book' && (
+                    <div
+                      style={{ color: typo.accentColor, fontFamily: headingFont }}
+                      className="text-[11px] uppercase tracking-[0.2em] font-semibold mb-1.5"
+                    >
+                      {config.metadata.institution}
+                    </div>
+                  )}
+                  <h1
                     style={{
-                      fontSize: `${tb.subtitleSizePt * ptToPx}px`,
-                      fontStyle: tb.subtitleItalic ? 'italic' : 'normal',
+                      fontFamily: titleFont,
+                      fontSize: `${tb.fontSizePt * ptToPx}px`,
+                      fontWeight: Number(tb.weight),
+                      fontStyle: tb.italic ? 'italic' : 'normal',
+                      textTransform: tb.transform === 'uppercase' ? 'uppercase' : 'none',
+                      fontVariant: tb.transform === 'smallcaps' ? 'small-caps' : 'normal',
+                      letterSpacing: `${typo.headingLetterSpacingEm}em`,
+                      lineHeight: 1.2,
+                      color: tb.color,
                     }}
-                    className="mt-1 opacity-75"
                   >
-                    {config.metadata.subtitle}
-                  </div>
-                )}
+                    {config.metadata.title}
+                  </h1>
+                  {config.metadata.subtitle && (
+                    <div
+                      style={{
+                        fontSize: `${tb.subtitleSizePt * ptToPx}px`,
+                        fontStyle: tb.subtitleItalic ? 'italic' : 'normal',
+                      }}
+                      className="mt-1 opacity-75"
+                    >
+                      {config.metadata.subtitle}
+                    </div>
+                  )}
+                </div>
+
                 <div
-                  style={{ fontSize: `${tb.metaSizePt * ptToPx}px` }}
-                  className="mt-2 opacity-85"
+                  style={{
+                    fontSize: `${tb.metaSizePt * ptToPx}px`,
+                    textAlign: tb.metaAlignment,
+                  }}
+                  className="mt-2.5 opacity-85"
                 >
                   {tb.metaLayout === 'stacked' ? (
-                    <div className="space-y-0.5">
-                      <div className="font-semibold">{config.metadata.author}</div>
-                      <div>{config.metadata.institution}</div>
-                      <div>{config.metadata.date}</div>
+                    <div className="space-y-1">
+                      {config.metadata.authors.length > 0 ? (
+                        config.metadata.authors.map((a, idx) => (
+                          <div key={idx} className="leading-snug">
+                            <span className="font-semibold">{a.name}</span>
+                            {a.role && <span className="italic opacity-80"> — {a.role}</span>}
+                            {a.institution && <div>{a.institution}</div>}
+                            {a.email && <div className="text-[0.88em] opacity-75">{a.email}</div>}
+                          </div>
+                        ))
+                      ) : (
+                        <>
+                          <div className="font-semibold">{config.metadata.author}</div>
+                          <div>{config.metadata.institution}</div>
+                        </>
+                      )}
+                      {config.metadata.department && <div>{config.metadata.department}</div>}
+                      <div>
+                        {[config.metadata.location, config.metadata.date]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </div>
                     </div>
                   ) : (
                     <span>
-                      <strong>{config.metadata.author}</strong> · {config.metadata.institution} ·{' '}
+                      <strong>{config.metadata.author}</strong> · {config.metadata.institution}
+                      {config.metadata.department ? ` · ${config.metadata.department}` : ''}
+                      {config.metadata.location ? ` · ${config.metadata.location}` : ''} ·{' '}
                       {config.metadata.date}
                     </span>
                   )}
@@ -825,7 +874,12 @@ export const PaperPage: React.FC<{
                         }}
                         className="mt-1 opacity-85"
                       >
-                        {m.images.sourcePrefix} {t.preview.figSourceText}
+                        {m.images.sourcePrefixBold ? (
+                          <strong>{m.images.sourcePrefix}</strong>
+                        ) : (
+                          m.images.sourcePrefix
+                        )}{' '}
+                        {t.preview.figSourceText}
                       </div>
                     )}
                   </figure>
@@ -964,12 +1018,17 @@ export const PaperPage: React.FC<{
                       style={{
                         fontFamily: captionFont,
                         fontSize: `${Math.max(8, m.tables.captionFontSizePt - 1) * ptToPx}px`,
-                        textAlign: m.tables.captionAlign,
+                        textAlign: m.tables.sourceAlign,
                         color: m.tables.captionColor,
                       }}
                       className="mt-1 opacity-85"
                     >
-                      {m.tables.sourcePrefix} {t.preview.tableSourceText}
+                      {m.tables.sourcePrefixBold ? (
+                        <strong>{m.tables.sourcePrefix}</strong>
+                      ) : (
+                        m.tables.sourcePrefix
+                      )}{' '}
+                      {t.preview.tableSourceText}
                     </div>
                   )}
                 </div>
@@ -996,7 +1055,7 @@ export const PaperPage: React.FC<{
               {m.citations.enabled && (
                 <div className="mt-3 pt-2 border-t border-black/15 break-inside-avoid">
                   <div style={{ ...h2Style, marginTop: 0 }} className="mb-1.5">
-                    {t.preview.referencesTitle}
+                    {m.citations.referencesTitle.trim() || t.preview.referencesTitle}
                   </div>
                   <div
                     style={{ fontSize: `${baseFontPx * 0.84}px` }}

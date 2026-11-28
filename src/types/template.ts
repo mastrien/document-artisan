@@ -167,12 +167,24 @@ export interface FrontMatterConfig {
   startNumberingAtBody: boolean;
 }
 
+export interface TitleBoxStyle {
+  enabled: boolean;
+  bgColor: string;
+  borderColor: string;
+  borderWidthPt: number;
+  borderLeftOnly: boolean;
+  paddingYPt: number;
+  paddingXPt: number;
+  radiusPt: number;
+}
+
 export interface TitleBlockStyle {
   fontSizePt: number;
   weight: '400' | '600' | '700' | '800';
   italic: boolean;
   transform: 'none' | 'uppercase' | 'smallcaps';
   alignment: SimpleAlign;
+  metaAlignment: SimpleAlign;
   color: string;
   subtitleSizePt: number;
   subtitleItalic: boolean;
@@ -181,6 +193,14 @@ export interface TitleBlockStyle {
   dividerWidthPt: number;
   dividerColor: string;
   spaceAfterPt: number;
+  box: TitleBoxStyle;
+}
+
+export interface AuthorEntry {
+  name: string;
+  email: string;
+  institution: string;
+  role: string;
 }
 
 export interface TemplateConfig {
@@ -192,7 +212,12 @@ export interface TemplateConfig {
     title: string;
     subtitle: string;
     author: string;
+    authorEmail: string;
+    authors: AuthorEntry[];
     institution: string;
+    department: string;
+    location: string;
+    documentCode: string;
     date: string;
   };
   page: {
@@ -316,7 +341,8 @@ export interface TemplateConfig {
       captionColor: string;
       showSourceLine: boolean;
       sourcePrefix: string;
-      sourceAlign: 'left' | 'center';
+      sourcePrefixBold: boolean;
+      sourceAlign: SimpleAlign;
       defaultWidthRatio: number;
       border: boolean;
       borderWidthPt: number;
@@ -349,12 +375,15 @@ export interface TemplateConfig {
       captionColor: string;
       showSourceLine: boolean;
       sourcePrefix: string;
+      sourcePrefixBold: boolean;
+      sourceAlign: SimpleAlign;
     };
     citations: {
       enabled: boolean;
       style: CitationStyle;
       abntCiteCase: AbntCitationCase;
       bibFile: string;
+      referencesTitle: string;
     };
     dialogues: {
       enabled: boolean;

@@ -110,8 +110,7 @@ export function buildSampleContent(
     lines.push(`\\begin{multicols}{${config.columns.count}}`);
   }
 
-  const headingCmd =
-    config.documentType === 'book' || config.documentType === 'report' ? '\\chapter' : '\\section';
+  const headingCmd = config.documentType === 'book' ? '\\chapter' : '\\section';
   lines.push(
     `${headingCmd}{${isPt ? 'Fundamentação e Estrutura Tipográfica' : 'Typographic Foundation and Page Grid'}}`
   );
@@ -237,8 +236,11 @@ export function buildSampleContent(
       lines.push(`  \\caption{${isPt ? 'Parâmetros do modelo' : 'Template configuration summary'}}`);
     }
     if (tbl.showSourceLine) {
+      const prefixTex = tbl.sourcePrefixBold
+        ? `\\textbf{${escapeLatex(tbl.sourcePrefix)}}`
+        : escapeLatex(tbl.sourcePrefix);
       lines.push(
-        `  \\artisansource[center]{${escapeLatex(tbl.sourcePrefix)} ${isPt ? 'Dados de configuração do Document Artisan (2026).' : 'Document Artisan configuration (2026).'}}`
+        `  \\artisansource[${tbl.sourceAlign}]{${prefixTex} ${isPt ? 'Dados de configuração do Document Artisan (2026).' : 'Document Artisan configuration (2026).'}}`
       );
     }
     lines.push('\\end{table}');
@@ -268,7 +270,10 @@ export function buildSampleContent(
 
   if (m.citations.enabled) {
     lines.push('');
-    lines.push('\\printbibliography');
+    const refTitle = m.citations.referencesTitle.trim();
+    lines.push(
+      refTitle ? `\\printbibliography[title={${escapeLatex(refTitle)}}]` : '\\printbibliography'
+    );
   }
 
   return lines;
@@ -298,15 +303,8 @@ export function buildMainTex(
   }
 
   lines.push('');
-  lines.push(`\\title{${escapeLatex(config.metadata.title)}}`);
-  if (config.documentType === 'slides' && config.metadata.subtitle) {
-    lines.push(`\\subtitle{${escapeLatex(config.metadata.subtitle)}}`);
-  }
-  lines.push(`\\author{${escapeLatex(config.metadata.author)}}`);
-  if (config.documentType === 'slides' && config.metadata.institution) {
-    lines.push(`\\institute{${escapeLatex(config.metadata.institution)}}`);
-  }
-  lines.push(`\\date{${escapeLatex(config.metadata.date)}}`);
+  lines.push('% Load separated document metadata & author definitions');
+  lines.push('\\input{metadata}');
   lines.push('');
   lines.push('\\begin{document}');
   lines.push('');
@@ -363,7 +361,7 @@ export function buildReadme(
 Generated with **Document Artisan**.
 
 ## Package Contents
-${options.includeClass ? `- **\`${slug}.cls\`**: Standalone LaTeX Document Class (used via \`\\documentclass{${slug}}\`).\n` : ''}${options.includeStyle ? `- **\`${slug}.sty\`**: Reusable LaTeX Style Package (used via \`\\usepackage{${slug}}\`).\n` : ''}${config.modules.citations.enabled ? `- **\`${config.modules.citations.bibFile || 'references.bib'}\`**: Sample BibLaTeX bibliography (${config.modules.citations.style}).\n` : ''}${fontFiles.length > 0 ? `- **\`fonts/\`**: Bundled custom font files (${fontFiles.join(', ')}).\n` : ''}
+${options.includeClass ? `- **\`${slug}.cls\`**: Standalone LaTeX Document Class (used via \`\\documentclass{${slug}}\`).\n` : ''}${options.includeStyle ? `- **\`${slug}.sty\`**: Reusable LaTeX Style Package (used via \`\\usepackage{${slug}}\`).\n` : ''}- **\`metadata.tex\`**: Document metadata, title, institution, and structured authors template (imported by \`main.tex\`).\n${config.modules.citations.enabled ? `- **\`${config.modules.citations.bibFile || 'references.bib'}\`**: Sample BibLaTeX bibliography (${config.modules.citations.style}).\n` : ''}${fontFiles.length > 0 ? `- **\`fonts/\`**: Bundled custom font files (${fontFiles.join(', ')}).\n` : ''}
 ## How to Compile
 
 \`\`\`bash

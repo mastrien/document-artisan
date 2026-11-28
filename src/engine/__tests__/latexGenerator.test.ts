@@ -3,6 +3,7 @@ import { DEFAULT_CONFIG, PRESETS } from '../../data/presets';
 import {
   buildClassFile,
   buildMainTex,
+  buildMetadataTex,
   buildStyleFile,
   generateProjectBundle,
   sanitizeSlug,
@@ -155,6 +156,7 @@ describe('latexGenerator', () => {
       style: 'abnt',
       abntCiteCase: 'titlecase',
       bibFile: 'refs.bib',
+      referencesTitle: 'Referências',
     };
     cfg.modules.dialogues = { enabled: true, style: 'literary', speakerBold: true, indentMm: 6 };
     const clsTitle = buildClassFile(cfg);
@@ -351,5 +353,41 @@ describe('latexGenerator', () => {
     expect(graphicxMatches).toHaveLength(1);
     const tcolorboxMatches = cls.match(/\\RequirePackage\[most\]\{tcolorbox\}/g) ?? [];
     expect(tcolorboxMatches).toHaveLength(1);
+  });
+
+  it('enables report preset with separated metadata.tex, title box radius, decoupled author alignment, bold Fonte, and custom references title', () => {
+    const reportPreset = PRESETS.find((p) => p.id === 'technical-report')!;
+    expect(reportPreset.comingSoon).toBe(false);
+
+    const cls = buildClassFile(reportPreset.config);
+    const metaTex = buildMetadataTex(reportPreset.config);
+    const mainTex = buildMainTex(reportPreset.config, 'class', 'example');
+    const bundle = generateProjectBundle(reportPreset.config);
+
+    expect(cls).toContain('\\LoadClass[11pt, a4paper]{article}');
+    expect(cls).toContain('\\definecolor{artisanTitleBoxBg}{HTML}{F0FDFA}');
+    expect(cls).toContain('arc=4pt, outer arc=4pt');
+    expect(cls).toContain('\\raggedleft\\fontsize{9.5}');
+    expect(cls).toContain('\\artisansource[left]{\\textbf{Fonte:}');
+    expect(mainTex).toContain('\\input{metadata}');
+    expect(mainTex).toContain('\\printbibliography[title={Referências Bibliográficas}]');
+    expect(metaTex).toContain('\\artisanauthoritem{Mariana Ribeiro}{Laboratório Central de Sistemas}{mariana.ribeiro@laboratorio-sistemas.org.br}{Engenheira de Arquitetura}');
+    expect(metaTex).toContain('\\artisandocumentcode{RT-2026-04}');
+    expect(bundle.map((f) => f.path)).toContain('class-version/metadata.tex');
+    expect(bundle.map((f) => f.path)).toContain('package-version/metadata.tex');
+    expect(cls.match(/\\RequirePackage\{etoolbox\}/g) ?? []).toHaveLength(1);
+    expect(cls.match(/\\RequirePackage\[most\]\{tcolorbox\}/g) ?? []).toHaveLength(1);
+  });
+
+  it('emits sharp corners when heading or title box radius is 0 and custom arc when non-zero', () => {
+    const cfg = cloneConfig();
+    cfg.typography.headings.h1.decoration = 'box';
+    cfg.typography.headings.h1.box.radiusPt = 0;
+    cfg.typography.headings.h2.decoration = 'box';
+    cfg.typography.headings.h2.box.radiusPt = 12;
+
+    const cls = buildClassFile(cfg);
+    expect(cls).toContain('arc=0pt, outer arc=0pt, sharp corners');
+    expect(cls).toContain('arc=12pt, outer arc=12pt');
   });
 });

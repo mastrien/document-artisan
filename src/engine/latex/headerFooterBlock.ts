@@ -12,27 +12,28 @@ export function resolveTokenLatex(
   customText: string,
   config: TemplateConfig
 ): string {
+  const isSlides = config.documentType === 'slides';
   switch (token) {
     case 'empty':
       return '';
     case 'title':
-      return escapeLatex(config.metadata.title);
+      return isSlides ? escapeLatex(config.metadata.title) : '\\theartisantitle';
     case 'section':
-      return config.documentType === 'slides' ? '\\insertsectionhead' : '\\nouppercase{\\leftmark}';
+      return isSlides ? '\\insertsectionhead' : '\\nouppercase{\\leftmark}';
     case 'author':
-      return escapeLatex(config.metadata.author);
+      return isSlides ? escapeLatex(config.metadata.author) : '\\theartisanauthor';
     case 'page':
-      return config.documentType === 'slides' ? '\\insertframenumber' : '\\thepage';
+      return isSlides ? '\\insertframenumber' : '\\thepage';
     case 'pageOfTotal':
-      return config.documentType === 'slides'
+      return isSlides
         ? '\\insertframenumber\\,/\\,\\inserttotalframenumber'
         : config.documentLanguage === 'brazilian'
           ? 'Página \\thepage\\ de \\pageref{LastPage}'
           : 'Page \\thepage\\ of \\pageref{LastPage}';
     case 'date':
-      return escapeLatex(config.metadata.date);
+      return isSlides ? escapeLatex(config.metadata.date) : '\\theartisandate';
     case 'institution':
-      return escapeLatex(config.metadata.institution);
+      return isSlides ? escapeLatex(config.metadata.institution) : '\\theartisaninstitution';
     case 'custom':
       return escapeLatex(customText);
   }

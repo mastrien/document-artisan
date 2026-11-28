@@ -441,17 +441,147 @@ export const TypographyPanel: React.FC = () => {
               ]}
             />
 
-            <SegmentedControl<'left' | 'center' | 'right'>
-              value={tb.alignment}
-              onChange={(alignment) =>
-                updateConfig('typography', { ...typo, titleBlock: { ...tb, alignment } })
+            <div className="space-y-1">
+              <span className="text-xs font-medium text-[var(--studio-text)] block">
+                {t.typography.titleAlignment}
+              </span>
+              <SegmentedControl<'left' | 'center' | 'right'>
+                value={tb.alignment}
+                onChange={(alignment) =>
+                  updateConfig('typography', { ...typo, titleBlock: { ...tb, alignment } })
+                }
+                options={[
+                  { value: 'left', label: t.typography.left },
+                  { value: 'center', label: t.typography.center },
+                  { value: 'right', label: t.typography.right },
+                ]}
+              />
+            </div>
+
+            <div className="space-y-1">
+              <span className="text-xs font-medium text-[var(--studio-text)] block">
+                {t.typography.metaAlignment}
+              </span>
+              <SegmentedControl<'left' | 'center' | 'right'>
+                value={tb.metaAlignment}
+                onChange={(metaAlignment) =>
+                  updateConfig('typography', { ...typo, titleBlock: { ...tb, metaAlignment } })
+                }
+                options={[
+                  { value: 'left', label: t.typography.left },
+                  { value: 'center', label: t.typography.center },
+                  { value: 'right', label: t.typography.right },
+                ]}
+              />
+            </div>
+
+            <ToggleSwitch
+              label={t.typography.titleBoxEnable}
+              checked={tb.box.enabled}
+              onChange={(enabled) =>
+                updateConfig('typography', {
+                  ...typo,
+                  titleBlock: { ...tb, box: { ...tb.box, enabled } },
+                })
               }
-              options={[
-                { value: 'left', label: t.typography.left },
-                { value: 'center', label: t.typography.center },
-                { value: 'right', label: t.typography.right },
-              ]}
             />
+
+            {tb.box.enabled && (
+              <div className="p-2.5 rounded-xl border border-amber-600/35 bg-[var(--studio-bg)] space-y-2.5">
+                <ColorPickerField
+                  label={t.typography.boxBgColor}
+                  value={tb.box.bgColor}
+                  swatches={['#f8fafc', '#f0fdfa', '#eff6ff', '#fef3c7', '#1e3a8a']}
+                  onChange={(bgColor) =>
+                    updateConfig('typography', {
+                      ...typo,
+                      titleBlock: { ...tb, box: { ...tb.box, bgColor } },
+                    })
+                  }
+                />
+                <ColorPickerField
+                  label={t.typography.boxBorderColor}
+                  value={tb.box.borderColor}
+                  swatches={['#0f766e', '#1d4ed8', '#92400e', '#111827', '#cbd5e1']}
+                  onChange={(borderColor) =>
+                    updateConfig('typography', {
+                      ...typo,
+                      titleBlock: { ...tb, box: { ...tb.box, borderColor } },
+                    })
+                  }
+                />
+                <SliderField
+                  label={t.typography.boxBorderWidth}
+                  value={tb.box.borderWidthPt}
+                  min={0}
+                  max={4}
+                  step={0.2}
+                  decimals={1}
+                  unit=" pt"
+                  onChange={(borderWidthPt) =>
+                    updateConfig('typography', {
+                      ...typo,
+                      titleBlock: { ...tb, box: { ...tb.box, borderWidthPt } },
+                    })
+                  }
+                />
+                <ToggleSwitch
+                  label={t.typography.boxBorderLeftOnly}
+                  checked={tb.box.borderLeftOnly}
+                  onChange={(borderLeftOnly) =>
+                    updateConfig('typography', {
+                      ...typo,
+                      titleBlock: { ...tb, box: { ...tb.box, borderLeftOnly } },
+                    })
+                  }
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <SliderField
+                    label={t.typography.boxPaddingY}
+                    value={tb.box.paddingYPt}
+                    min={2}
+                    max={20}
+                    step={1}
+                    unit="pt"
+                    onChange={(paddingYPt) =>
+                      updateConfig('typography', {
+                        ...typo,
+                        titleBlock: { ...tb, box: { ...tb.box, paddingYPt } },
+                      })
+                    }
+                  />
+                  <SliderField
+                    label={t.typography.boxPaddingX}
+                    value={tb.box.paddingXPt}
+                    min={4}
+                    max={24}
+                    step={1}
+                    unit="pt"
+                    onChange={(paddingXPt) =>
+                      updateConfig('typography', {
+                        ...typo,
+                        titleBlock: { ...tb, box: { ...tb.box, paddingXPt } },
+                      })
+                    }
+                  />
+                </div>
+                <SliderField
+                  label={t.typography.boxRadius}
+                  value={tb.box.radiusPt}
+                  min={0}
+                  max={24}
+                  step={0.5}
+                  decimals={1}
+                  unit=" pt"
+                  onChange={(radiusPt) =>
+                    updateConfig('typography', {
+                      ...typo,
+                      titleBlock: { ...tb, box: { ...tb.box, radiusPt } },
+                    })
+                  }
+                />
+              </div>
+            )}
 
             <SegmentedControl<'none' | 'uppercase' | 'smallcaps'>
               value={tb.transform}

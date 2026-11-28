@@ -2,19 +2,24 @@ import { GeneratedFile, TemplateConfig } from '../types/template';
 import { buildFontBlock } from './latex/fontsBlock';
 import { buildFrontMatterMacros } from './latex/frontMatterBlock';
 import { buildHeaderFooterBlock } from './latex/headerFooterBlock';
+import { buildMetadataMacros, buildMetadataTex } from './latex/metadataMacros';
 import { buildModulesBlock } from './latex/modulesBlock';
 import { buildPageGeometryAndColumns } from './latex/pageBlock';
 import { buildMainTex, buildReadme, buildReferencesBib } from './latex/sampleDocument';
 import { buildTypographyAndHeadingsBlock } from './latex/typographyBlock';
 import { baseLatexClass, getClassOptions, sanitizeSlug } from './latex/utils';
 
-export { buildMainTex, buildReadme, buildReferencesBib, sanitizeSlug };
+export { buildMainTex, buildMetadataTex, buildReadme, buildReferencesBib, sanitizeSlug };
 
 function buildCoreBody(config: TemplateConfig): string[] {
   const lines: string[] = [];
   lines.push(`% --- Language (babel) ---`);
   lines.push(`\\RequirePackage[${config.documentLanguage}]{babel}`);
   lines.push('');
+  const metaLines = buildMetadataMacros(config);
+  if (metaLines.length > 0) {
+    lines.push(...metaLines);
+  }
   lines.push(...buildFontBlock(config));
   lines.push('');
   lines.push(...buildPageGeometryAndColumns(config));
@@ -91,6 +96,12 @@ export function generateProjectBundle(config: TemplateConfig): GeneratedFile[] {
       content,
       language: 'latex',
       label: `${prefix}${slug}.${ext}`,
+    });
+    files.push({
+      path: `${prefix}metadata.tex`,
+      content: buildMetadataTex(config),
+      language: 'latex',
+      label: `${prefix}metadata.tex`,
     });
     files.push({
       path: `${prefix}main.tex`,

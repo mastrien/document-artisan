@@ -5,6 +5,7 @@ import { useI18n } from '../../i18n/LanguageContext';
 import { useTemplate } from '../../state/TemplateContext';
 import { DocumentLanguage, DocumentType, LatexEngine } from '../../types/template';
 import { PanelSection, SegmentedControl, SelectField } from '../ui/Controls';
+import { AuthorsEditor } from './AuthorsEditor';
 
 export const ModelPanel: React.FC = () => {
   const { lang, t } = useI18n();
@@ -18,7 +19,6 @@ export const ModelPanel: React.FC = () => {
       id: 'report',
       label: t.model.types.report,
       icon: <FileSpreadsheet className="w-4 h-4" />,
-      soon: true,
     },
     {
       id: 'slides',
@@ -135,6 +135,9 @@ export const ModelPanel: React.FC = () => {
             ['subtitle', t.model.subtitle],
             ['author', t.model.author],
             ['institution', t.model.institution],
+            ['department', t.model.department],
+            ['location', t.model.location],
+            ['documentCode', t.model.documentCode],
             ['date', t.model.date],
           ] as const
         ).map(([key, label]) => (
@@ -151,6 +154,8 @@ export const ModelPanel: React.FC = () => {
           </label>
         ))}
       </PanelSection>
+
+      <AuthorsEditor />
     </div>
   );
 };

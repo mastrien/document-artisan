@@ -3,7 +3,7 @@
 ## Project Overview & Map
 - **Name:** Document Artisan — Visual LaTeX template studio (`.cls` + `.sty` + `.zip` + real PDF preview).
 - **Stack:** React 19, TypeScript (strict), Vite 6, Tailwind CSS v4, Vitest, JSZip, `pdfjs-dist`, Tauri v2 (Rust), local MiKTeX (`xelatex` / `lualatex` / `pdflatex` + `biber`).
-- **Active Scope:** Currently focused on `article` and `monograph` templates; `book`, `report`, and `slides` are flagged `comingSoon: true` in UI/presets.
+- **Active Scope:** Currently focused on `article`, `monograph`, and `report` templates; `book` and `slides` are flagged `comingSoon: true` in UI/presets.
 - **Core Sources of Truth:**
   - Schema: `src/types/template.ts`
   - Fonts & Paper specs: `src/data/fonts.ts`

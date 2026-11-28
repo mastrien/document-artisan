@@ -28,12 +28,10 @@ export function baseLatexClass(config: TemplateConfig): string {
   switch (config.documentType) {
     case 'book':
       return 'book';
-    case 'report':
-      return 'report';
     case 'slides':
       return 'beamer';
     default:
-      // 'article' and 'monograph' both build cleanly on article + titlesec/fancyhdr
+      // 'article', 'monograph', and 'report' all build cleanly on article + titlesec/fancyhdr
       return 'article';
   }
 }
@@ -85,6 +83,7 @@ export function hasBoxedHeading(config: TemplateConfig): boolean {
 export function needsTcolorboxInTypography(config: TemplateConfig): boolean {
   if (config.documentType === 'slides') return false;
   return (
+    config.typography.titleBlock.box.enabled ||
     hasBoxedHeading(config) ||
     config.modules.callouts.enabled ||
     (config.modules.longQuotes.enabled && config.modules.longQuotes.leftBorder)

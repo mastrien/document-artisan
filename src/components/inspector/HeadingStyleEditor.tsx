@@ -163,7 +163,7 @@ export const HeadingStyleEditor: React.FC = () => {
             label={t.typography.boxRadius}
             value={hStyle.box.radiusPt}
             min={0}
-            max={10}
+            max={24}
             step={0.5}
             decimals={1}
             unit=" pt"

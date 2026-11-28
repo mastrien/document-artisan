@@ -238,37 +238,47 @@ export const ModulesPanel: React.FC = () => {
             }
           />
           {m.images.showSourceLine && (
-            <div className="grid grid-cols-2 gap-2">
-              <label className="block space-y-1">
-                <span className="text-[11px] font-medium text-[var(--studio-muted)] block">
-                  {t.modules.images.sourcePrefix}
-                </span>
-                <input
-                  type="text"
-                  value={m.images.sourcePrefix}
-                  onChange={(e) =>
-                    updateConfig('modules', {
-                      ...m,
-                      images: { ...m.images, sourcePrefix: e.target.value },
-                    })
-                  }
-                  className="w-full rounded-md border border-[var(--studio-border)] bg-[var(--studio-bg)] px-2 py-1 text-xs text-[var(--studio-text)]"
-                />
-              </label>
-              <div className="space-y-1">
-                <span className="text-[11px] font-medium text-[var(--studio-muted)] block">
-                  {t.modules.images.sourceAlign}
-                </span>
-                <SegmentedControl<'left' | 'center'>
-                  value={m.images.sourceAlign}
-                  onChange={(sourceAlign) =>
-                    updateConfig('modules', { ...m, images: { ...m.images, sourceAlign } })
-                  }
-                  options={[
-                    { value: 'left', label: 'Esq' },
-                    { value: 'center', label: 'Centro' },
-                  ]}
-                />
+            <div className="space-y-2">
+              <ToggleSwitch
+                label={t.modules.images.sourcePrefixBold}
+                checked={m.images.sourcePrefixBold}
+                onChange={(sourcePrefixBold) =>
+                  updateConfig('modules', { ...m, images: { ...m.images, sourcePrefixBold } })
+                }
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <label className="block space-y-1">
+                  <span className="text-[11px] font-medium text-[var(--studio-muted)] block">
+                    {t.modules.images.sourcePrefix}
+                  </span>
+                  <input
+                    type="text"
+                    value={m.images.sourcePrefix}
+                    onChange={(e) =>
+                      updateConfig('modules', {
+                        ...m,
+                        images: { ...m.images, sourcePrefix: e.target.value },
+                      })
+                    }
+                    className="w-full rounded-md border border-[var(--studio-border)] bg-[var(--studio-bg)] px-2 py-1 text-xs text-[var(--studio-text)]"
+                  />
+                </label>
+                <div className="space-y-1">
+                  <span className="text-[11px] font-medium text-[var(--studio-muted)] block">
+                    {t.modules.images.sourceAlign}
+                  </span>
+                  <SegmentedControl<SimpleAlign>
+                    value={m.images.sourceAlign}
+                    onChange={(sourceAlign) =>
+                      updateConfig('modules', { ...m, images: { ...m.images, sourceAlign } })
+                    }
+                    options={[
+                      { value: 'left', label: 'Esq' },
+                      { value: 'center', label: 'Centro' },
+                      { value: 'right', label: 'Dir' },
+                    ]}
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -499,6 +509,51 @@ export const ModulesPanel: React.FC = () => {
               updateConfig('modules', { ...m, tables: { ...m.tables, showSourceLine } })
             }
           />
+          {m.tables.showSourceLine && (
+            <div className="space-y-2">
+              <ToggleSwitch
+                label={t.modules.tables.sourcePrefixBold}
+                checked={m.tables.sourcePrefixBold}
+                onChange={(sourcePrefixBold) =>
+                  updateConfig('modules', { ...m, tables: { ...m.tables, sourcePrefixBold } })
+                }
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <label className="block space-y-1">
+                  <span className="text-[11px] font-medium text-[var(--studio-muted)] block">
+                    {t.modules.tables.sourcePrefix}
+                  </span>
+                  <input
+                    type="text"
+                    value={m.tables.sourcePrefix}
+                    onChange={(e) =>
+                      updateConfig('modules', {
+                        ...m,
+                        tables: { ...m.tables, sourcePrefix: e.target.value },
+                      })
+                    }
+                    className="w-full rounded-md border border-[var(--studio-border)] bg-[var(--studio-bg)] px-2 py-1 text-xs text-[var(--studio-text)]"
+                  />
+                </label>
+                <div className="space-y-1">
+                  <span className="text-[11px] font-medium text-[var(--studio-muted)] block">
+                    {t.modules.tables.sourceAlign}
+                  </span>
+                  <SegmentedControl<SimpleAlign>
+                    value={m.tables.sourceAlign}
+                    onChange={(sourceAlign) =>
+                      updateConfig('modules', { ...m, tables: { ...m.tables, sourceAlign } })
+                    }
+                    options={[
+                      { value: 'left', label: 'Esq' },
+                      { value: 'center', label: 'Centro' },
+                      { value: 'right', label: 'Dir' },
+                    ]}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </ModuleCard>
 
@@ -550,6 +605,23 @@ export const ModulesPanel: React.FC = () => {
             />
           </div>
         )}
+        <label className="block space-y-1">
+          <span className="text-[11px] font-medium text-[var(--studio-muted)] block">
+            {t.modules.citations.referencesTitle}
+          </span>
+          <input
+            type="text"
+            value={m.citations.referencesTitle}
+            placeholder={t.modules.citations.referencesPlaceholder}
+            onChange={(e) =>
+              updateConfig('modules', {
+                ...m,
+                citations: { ...m.citations, referencesTitle: e.target.value },
+              })
+            }
+            className="w-full rounded-md border border-[var(--studio-border)] bg-[var(--studio-bg)] px-2 py-1 text-xs text-[var(--studio-text)]"
+          />
+        </label>
       </ModuleCard>
 
       {/* Editorial Extra Modules (Long Quotes, Lists, Footnotes) */}

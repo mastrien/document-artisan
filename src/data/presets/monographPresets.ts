@@ -1,10 +1,12 @@
 import {
   baseExportOptions,
+  createSingleAuthor,
   DEFAULT_FIRST_PAGE_HF,
   DEFAULT_FOOTER_LOGO,
   DEFAULT_FRONT_MATTER,
   DEFAULT_HEADER_LOGO,
   DEFAULT_HEADING_BOX,
+  DEFAULT_TITLE_BOX,
   PresetDefinition,
 } from './defaults';
 
@@ -26,7 +28,16 @@ export const MONOGRAPH_PRESETS: PresetDefinition[] = [
         title: 'Automação Tipográfica de Modelos Editoriais em LaTeX',
         subtitle: 'Um estudo aplicado à padronização normativa de trabalhos acadêmicos',
         author: 'Ana Carolina Mendes',
+        authorEmail: 'ana.mendes@ufeng.edu.br',
+        authors: createSingleAuthor(
+          'Ana Carolina Mendes',
+          'ana.mendes@ufeng.edu.br',
+          'Universidade Federal de Engenharia e Artes Gráficas'
+        ),
         institution: 'Universidade Federal de Engenharia e Artes Gráficas',
+        department: '',
+        location: 'São Paulo',
+        documentCode: '',
         date: '2026',
       },
       page: {
@@ -68,6 +79,7 @@ export const MONOGRAPH_PRESETS: PresetDefinition[] = [
           italic: false,
           transform: 'uppercase',
           alignment: 'center',
+          metaAlignment: 'center',
           color: '#111827',
           subtitleSizePt: 12,
           subtitleItalic: false,
@@ -76,6 +88,7 @@ export const MONOGRAPH_PRESETS: PresetDefinition[] = [
           dividerWidthPt: 0,
           dividerColor: '#d1d5db',
           spaceAfterPt: 14,
+          box: { ...DEFAULT_TITLE_BOX },
         },
         headings: {
           h1: {
@@ -216,6 +229,7 @@ export const MONOGRAPH_PRESETS: PresetDefinition[] = [
           captionColor: '#111827',
           showSourceLine: true,
           sourcePrefix: 'Fonte:',
+          sourcePrefixBold: false,
           sourceAlign: 'center',
           defaultWidthRatio: 0.82,
           border: false,
@@ -249,12 +263,15 @@ export const MONOGRAPH_PRESETS: PresetDefinition[] = [
           captionColor: '#111827',
           showSourceLine: true,
           sourcePrefix: 'Fonte:',
+          sourcePrefixBold: false,
+          sourceAlign: 'center',
         },
         citations: {
           enabled: true,
           style: 'abnt',
           abntCiteCase: 'titlecase',
           bibFile: 'references.bib',
+          referencesTitle: 'Referências',
         },
         dialogues: { enabled: false, style: 'literary', speakerBold: true, indentMm: 6 },
         math: { enabled: true, numberedEquations: true, theoremBoxes: false },

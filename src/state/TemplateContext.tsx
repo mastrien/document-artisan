@@ -113,10 +113,19 @@ function variantCssDescriptors(variant: FontVariantKey): FontFaceDescriptors {
 
 export function sanitizeStoredConfig(parsed: Partial<TemplateConfig>): TemplateConfig {
   const def = DEFAULT_CONFIG;
+  const mergedAuthor = parsed.metadata?.author ?? def.metadata.author;
+  const mergedInstitution = parsed.metadata?.institution ?? def.metadata.institution;
+  const mergedEmail = parsed.metadata?.authorEmail ?? def.metadata.authorEmail;
+  const parsedAuthors = parsed.metadata?.authors;
+  const normalizedAuthors =
+    Array.isArray(parsedAuthors) && parsedAuthors.length > 0
+      ? parsedAuthors
+      : [{ name: mergedAuthor, email: mergedEmail, institution: mergedInstitution, role: '' }];
+
   return {
     ...def,
     ...parsed,
-    metadata: { ...def.metadata, ...parsed.metadata },
+    metadata: { ...def.metadata, ...parsed.metadata, authors: normalizedAuthors },
     page: {
       ...def.page,
       ...parsed.page,
@@ -127,7 +136,15 @@ export function sanitizeStoredConfig(parsed: Partial<TemplateConfig>): TemplateC
     typography: {
       ...def.typography,
       ...parsed.typography,
-      titleBlock: { ...def.typography.titleBlock, ...parsed.typography?.titleBlock },
+      titleBlock: {
+        ...def.typography.titleBlock,
+        ...parsed.typography?.titleBlock,
+        metaAlignment:
+          parsed.typography?.titleBlock?.metaAlignment ??
+          parsed.typography?.titleBlock?.alignment ??
+          def.typography.titleBlock.metaAlignment,
+        box: { ...def.typography.titleBlock.box, ...parsed.typography?.titleBlock?.box },
+      },
       headings: {
         h1: {
           ...def.typography.headings.h1,

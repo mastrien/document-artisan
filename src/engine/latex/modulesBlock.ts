@@ -41,14 +41,16 @@ export function buildModulesBlock(config: TemplateConfig): string[] {
 
   if (m.images.enabled || m.tables.enabled) {
     lines.push('% [Shared Caption Engine]');
-    lines.push('\\RequirePackage{etoolbox}');
+    if (isSlides) {
+      lines.push('\\RequirePackage{etoolbox}');
+    }
     if (!isSlides) {
       lines.push('\\RequirePackage{caption}');
       lines.push('\\DeclareCaptionLabelSeparator{endash}{~--~}');
       lines.push('\\DeclareCaptionLabelSeparator{emdash}{~---~}');
     }
     lines.push(
-      '\\newcommand{\\artisansource}[2][left]{\\par\\vspace{3pt}{\\ifstrequal{#1}{center}{\\centering}{\\raggedright}\\captionfont\\footnotesize\\color{artisanMuted}#2\\par}}'
+      '\\newcommand{\\artisansource}[2][left]{\\par\\vspace{3pt}{\\ifstrequal{#1}{center}{\\centering}{\\ifstrequal{#1}{right}{\\raggedleft}{\\raggedright}}\\captionfont\\footnotesize\\color{artisanMuted}#2\\par}}'
     );
     lines.push('');
   }
@@ -101,8 +103,11 @@ export function buildModulesBlock(config: TemplateConfig): string[] {
       lines.push('    \\caption{#3}');
     }
     if (img.showSourceLine) {
+      const prefixTex = img.sourcePrefixBold
+        ? `\\textbf{${escapeLatex(img.sourcePrefix)}}`
+        : escapeLatex(img.sourcePrefix);
       lines.push(
-        `    \\ifstrempty{#4}{}{\\artisansource[${img.sourceAlign}]{${escapeLatex(img.sourcePrefix)} #4}}`
+        `    \\ifstrempty{#4}{}{\\artisansource[${img.sourceAlign}]{${prefixTex} #4}}`
       );
     }
     lines.push(`    \\vspace{${img.spacingVerticalPt}pt}`);

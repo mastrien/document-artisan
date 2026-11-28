@@ -1,10 +1,32 @@
 import {
+  AuthorEntry,
   FirstPageHeaderFooterConfig,
   FrontMatterConfig,
   HeaderFooterLogoConfig,
   HeadingBoxStyle,
   TemplateConfig,
+  TitleBoxStyle,
 } from '../../types/template';
+
+export const DEFAULT_TITLE_BOX: TitleBoxStyle = {
+  enabled: false,
+  bgColor: '#f8fafc',
+  borderColor: '#0f766e',
+  borderWidthPt: 0.8,
+  borderLeftOnly: false,
+  paddingYPt: 10,
+  paddingXPt: 14,
+  radiusPt: 4,
+};
+
+export function createSingleAuthor(
+  name: string,
+  email: string,
+  institution: string,
+  role = ''
+): AuthorEntry[] {
+  return [{ name, email, institution, role }];
+}
 
 export const DEFAULT_HEADING_BOX: HeadingBoxStyle = {
   bgColor: '#f1f5f9',
