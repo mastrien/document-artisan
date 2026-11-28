@@ -3,16 +3,17 @@
 ## Project Overview & Map
 - **Name:** Document Artisan — Visual LaTeX template studio (`.cls` + `.sty` + `.zip` + real PDF preview).
 - **Stack:** React 19, TypeScript (strict), Vite 6, Tailwind CSS v4, Vitest, JSZip, `pdfjs-dist`, Tauri v2 (Rust), local MiKTeX (`xelatex` / `lualatex` / `pdflatex` + `biber`).
-- **Active Scope:** Currently focused on `article` templates; `book`, `report`, and `slides` are flagged `comingSoon: true` in UI/presets.
+- **Active Scope:** Currently focused on `article` and `monograph` templates; `book`, `report`, and `slides` are flagged `comingSoon: true` in UI/presets.
 - **Core Sources of Truth:**
   - Schema: `src/types/template.ts`
   - Fonts & Paper specs: `src/data/fonts.ts`
-  - Presets: `src/data/presets.ts`
+  - Presets: `src/data/presets.ts`, `src/data/presets/*`
   - Bilingual UI & sample copy (`pt` / `en`): `src/i18n/translations.ts`
-  - App state, font/logo loaders & `localStorage` migration: `src/state/TemplateContext.tsx`
-  - Pure LaTeX generator & bundle builder: `src/engine/latexGenerator.ts`
+  - App state, font/logo loaders & local asset persistence: `src/state/TemplateContext.tsx`, `src/state/assetStore.ts`
+  - Pure LaTeX generator & bundle builder: `src/engine/latexGenerator.ts`, `src/engine/latex/*`
   - ZIP packager & Tauri compiler bridge: `src/engine/zipExporter.ts`, `src/engine/compiler.ts`
-  - Native Rust compiler backend: `src-tauri/src/latex.rs`, `src-tauri/src/lib.rs`
+  - Native Rust compiler & workspace assets backend: `src-tauri/src/latex.rs`, `src-tauri/src/assets.rs`, `src-tauri/src/lib.rs`
+- **Future MCP Architecture Direction:** Keep `TemplateConfig` cleanly JSON-serializable, `src/engine/latex/*` completely pure/DOM-free, and Tauri local binary assets under `app_data_dir/workspace-assets/` so a future MCP server can inspect DOCX files and drive template generation directly.
 
 ## Mandatory Commands (Feedback Loop)
 Run checks before finishing any task. On Windows, if `node`/`npm` is not in default PATH, prepend the `fnm` Node v23.4.0 installation dir:
