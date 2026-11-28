@@ -1,4 +1,4 @@
-export type DocumentType = 'article' | 'book' | 'report' | 'slides';
+export type DocumentType = 'article' | 'monograph' | 'book' | 'report' | 'slides';
 export type LatexEngine = 'xelatex' | 'lualatex' | 'pdflatex';
 export type DocumentLanguage = 'brazilian' | 'english' | 'spanish';
 export type PaperSize =
@@ -111,6 +111,60 @@ export interface HeadingLevelStyle {
   decoration: HeadingDecoration;
   box: HeadingBoxStyle;
   numberSeparator: 'space' | 'dot' | 'dash';
+}
+
+export type ListBulletStyle = 'disc' | 'dash' | 'square' | 'arrow';
+export type ListEnumStyle = 'arabic' | 'alphaParen' | 'romanParen';
+
+export interface CoverPageConfig {
+  enabled: boolean;
+  showInstitution: boolean;
+  showLogo: boolean;
+  logoHeightMm: number;
+  showCourse: boolean;
+  course: string;
+  showCity: boolean;
+  city: string;
+  uppercaseTitle: boolean;
+  uppercaseAuthor: boolean;
+  borderFrame: boolean;
+}
+
+export interface TitleSheetConfig {
+  enabled: boolean;
+  natureNote: string;
+  natureWidthRatio: number;
+  advisorLabel: string;
+  advisorName: string;
+  coadvisorLabel: string;
+  coadvisorName: string;
+  showCityAndDate: boolean;
+}
+
+export interface AbstractBlockConfig {
+  enabled: boolean;
+  title: string;
+  text: string;
+  keywordsLabel: string;
+  keywords: string;
+  includeEnglishAbstract: boolean;
+  englishTitle: string;
+  englishText: string;
+  englishKeywordsLabel: string;
+  englishKeywords: string;
+  onSeparatePage: boolean;
+  fontSizePt: number;
+  lineSpacing: number;
+}
+
+export interface FrontMatterConfig {
+  coverPage: CoverPageConfig;
+  titleSheet: TitleSheetConfig;
+  abstractBlock: AbstractBlockConfig;
+  includeListOfFigures: boolean;
+  includeListOfTables: boolean;
+  sectionStartsNewPage: boolean;
+  startNumberingAtBody: boolean;
 }
 
 export interface TitleBlockStyle {
@@ -247,6 +301,7 @@ export interface TemplateConfig {
     tocDepth: 1 | 2 | 3;
     includeToc: boolean;
   };
+  frontMatter: FrontMatterConfig;
   modules: {
     images: {
       enabled: boolean;
@@ -326,6 +381,28 @@ export interface TemplateConfig {
       enabled: boolean;
       borderLeftOnly: boolean;
     };
+    longQuotes: {
+      enabled: boolean;
+      indentLeftMm: number;
+      fontSizePt: number;
+      lineSpacing: number;
+      italic: boolean;
+      leftBorder: boolean;
+    };
+    lists: {
+      enabled: boolean;
+      bulletStyle: ListBulletStyle;
+      enumStyle: ListEnumStyle;
+      itemSepPt: number;
+      leftMarginMm: number;
+    };
+    footnotes: {
+      enabled: boolean;
+      fontSizePt: number;
+      lineSpacing: number;
+      ruleWidthRatio: number;
+      hangingIndent: boolean;
+    };
   };
   exportOptions: {
     includeClass: boolean;
@@ -341,6 +418,12 @@ export interface GeneratedFile {
   label: string;
 }
 
-export type InspectorTab = 'model' | 'page' | 'typography' | 'headerFooter' | 'modules';
+export type InspectorTab =
+  | 'model'
+  | 'frontMatter'
+  | 'page'
+  | 'typography'
+  | 'headerFooter'
+  | 'modules';
 export type ViewMode = 'preview' | 'split' | 'code';
 export type StudioTheme = 'light' | 'dark';

@@ -2,8 +2,12 @@ import {
   baseExportOptions,
   DEFAULT_FIRST_PAGE_HF,
   DEFAULT_FOOTER_LOGO,
+  DEFAULT_FOOTNOTES,
+  DEFAULT_FRONT_MATTER,
   DEFAULT_HEADER_LOGO,
   DEFAULT_HEADING_BOX,
+  DEFAULT_LISTS,
+  DEFAULT_LONG_QUOTES,
   PresetDefinition,
 } from './defaults';
 
@@ -173,6 +177,15 @@ export const ARTICLE_PRESETS: PresetDefinition[] = [
         tocDepth: 3,
         includeToc: false,
       },
+      frontMatter: {
+        ...DEFAULT_FRONT_MATTER,
+        abstractBlock: {
+          ...DEFAULT_FRONT_MATTER.abstractBlock,
+          enabled: true,
+          onSeparatePage: false,
+          includeEnglishAbstract: false,
+        },
+      },
       modules: {
         images: {
           enabled: true,
@@ -227,6 +240,9 @@ export const ARTICLE_PRESETS: PresetDefinition[] = [
         code: { enabled: false, lineNumbers: true, frame: true, backgroundTint: true },
         hyperref: { enabled: true, coloredLinks: false },
         callouts: { enabled: false, borderLeftOnly: true },
+        longQuotes: { ...DEFAULT_LONG_QUOTES, enabled: true },
+        lists: { ...DEFAULT_LISTS },
+        footnotes: { ...DEFAULT_FOOTNOTES, enabled: true },
       },
       exportOptions: baseExportOptions,
     },
@@ -396,6 +412,7 @@ export const ARTICLE_PRESETS: PresetDefinition[] = [
         tocDepth: 2,
         includeToc: false,
       },
+      frontMatter: { ...DEFAULT_FRONT_MATTER },
       modules: {
         images: {
           enabled: true,
@@ -450,6 +467,9 @@ export const ARTICLE_PRESETS: PresetDefinition[] = [
         code: { enabled: true, lineNumbers: true, frame: true, backgroundTint: true },
         hyperref: { enabled: true, coloredLinks: true },
         callouts: { enabled: false, borderLeftOnly: true },
+        longQuotes: { ...DEFAULT_LONG_QUOTES },
+        lists: { ...DEFAULT_LISTS },
+        footnotes: { ...DEFAULT_FOOTNOTES },
       },
       exportOptions: baseExportOptions,
     },
@@ -645,6 +665,7 @@ export const ARTICLE_PRESETS: PresetDefinition[] = [
         tocDepth: 2,
         includeToc: false,
       },
+      frontMatter: { ...DEFAULT_FRONT_MATTER },
       modules: {
         images: {
           enabled: true,
@@ -699,6 +720,9 @@ export const ARTICLE_PRESETS: PresetDefinition[] = [
         code: { enabled: false, lineNumbers: true, frame: true, backgroundTint: true },
         hyperref: { enabled: true, coloredLinks: true },
         callouts: { enabled: true, borderLeftOnly: true },
+        longQuotes: { ...DEFAULT_LONG_QUOTES },
+        lists: { ...DEFAULT_LISTS },
+        footnotes: { ...DEFAULT_FOOTNOTES },
       },
       exportOptions: baseExportOptions,
     },

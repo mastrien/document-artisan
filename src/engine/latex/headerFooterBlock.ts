@@ -5,7 +5,7 @@ import {
   RuleStyle,
   TemplateConfig,
 } from '../../types/template';
-import { escapeLatex } from './utils';
+import { escapeLatex, hasPreTextualPages, needsEarlyGraphicx } from './utils';
 
 export function resolveTokenLatex(
   token: HeaderFooterToken,
@@ -159,7 +159,7 @@ export function buildHeaderFooterBlock(config: TemplateConfig): string[] {
   }
 
   lines.push('% --- Headers & Footers ---');
-  if (hf.headerLogo.enabled || hf.footerLogo.enabled) {
+  if (needsEarlyGraphicx(config)) {
     lines.push('\\RequirePackage{graphicx}');
   }
   const usesPageOfTotal =
@@ -289,7 +289,12 @@ export function buildHeaderFooterBlock(config: TemplateConfig): string[] {
     lines.push('\\renewcommand{\\footrulewidth}{0pt}');
   }
 
-  if (hf.firstPageMode === 'empty') {
+  if (config.frontMatter.startNumberingAtBody && hasPreTextualPages(config)) {
+    lines.push(
+      '\\fancypagestyle{plain}{\\fancyhf{}\\renewcommand{\\headrulewidth}{0pt}\\renewcommand{\\footrulewidth}{0pt}}'
+    );
+    lines.push('\\AtBeginDocument{\\pagestyle{empty}}');
+  } else if (hf.firstPageMode === 'empty') {
     lines.push(
       '\\fancypagestyle{plain}{\\fancyhf{}\\renewcommand{\\headrulewidth}{0pt}\\renewcommand{\\footrulewidth}{0pt}}'
     );

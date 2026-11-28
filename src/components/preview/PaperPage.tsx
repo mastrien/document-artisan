@@ -105,20 +105,27 @@ export const PaperPage: React.FC<{
   const ptToPx = 96 / 72;
   const baseFontPx = typo.baseFontSizePt * ptToPx;
   const activeSectionTitle = pageNumber === 1 ? t.preview.sec1 : t.preview.sec2;
+  const fm = config.frontMatter;
+  const hidePageHeaderFooterForAbnt =
+    fm.startNumberingAtBody && (fm.coverPage.enabled || fm.titleSheet.enabled);
 
   const isCustomFirstPage = pageNumber === 1 && hf.firstPageMode === 'custom';
   const isEmptyFirstPage = pageNumber === 1 && hf.firstPageMode === 'empty';
 
-  const headerActive = isEmptyFirstPage
-    ? false
-    : isCustomFirstPage
-      ? hf.firstPage.headerEnabled
-      : hf.headerEnabled;
-  const footerActive = isEmptyFirstPage
-    ? false
-    : isCustomFirstPage
-      ? hf.firstPage.footerEnabled
-      : hf.footerEnabled;
+  const headerActive = hidePageHeaderFooterForAbnt
+    ? pageNumber > 1 && hf.headerEnabled
+    : isEmptyFirstPage
+      ? false
+      : isCustomFirstPage
+        ? hf.firstPage.headerEnabled
+        : hf.headerEnabled;
+  const footerActive = hidePageHeaderFooterForAbnt
+    ? pageNumber > 1 && hf.footerEnabled
+    : isEmptyFirstPage
+      ? false
+      : isCustomFirstPage
+        ? hf.firstPage.footerEnabled
+        : hf.footerEnabled;
 
   const hLeftToken = isCustomFirstPage ? hf.firstPage.headerLeft : hf.headerLeft;
   const hCenterToken = isCustomFirstPage ? hf.firstPage.headerCenter : hf.headerCenter;
@@ -497,10 +504,12 @@ export const PaperPage: React.FC<{
         )}
 
         {/* Page Body */}
-        <div className="relative h-full overflow-hidden">
+        <div className="relative h-full overflow-hidden flex flex-col justify-between">
+          <div className="min-h-0">
           {pageNumber === 1 ? (
             <>
-              {/* Title Block */}
+              {/* Title Block (shown when dedicated cover & title sheet are disabled) */}
+              {!fm.coverPage.enabled && !fm.titleSheet.enabled && (
               <div
                 style={{
                   textAlign: tb.alignment,
@@ -562,45 +571,78 @@ export const PaperPage: React.FC<{
                   )}
                 </div>
               </div>
+              )}
 
-              {/* Optional TOC */}
-              {config.numbering.includeToc && (
+              {/* Inline Abstract + Keywords */}
+              {fm.abstractBlock.enabled && !fm.abstractBlock.onSeparatePage && (
+                <div
+                  style={{
+                    fontSize: `${fm.abstractBlock.fontSizePt * ptToPx}px`,
+                    lineHeight: fm.abstractBlock.lineSpacing,
+                    marginBottom: `${10 * ptToPx}px`,
+                  }}
+                  className="space-y-1 opacity-90"
+                >
+                  <div style={{ fontFamily: headingFont }} className="font-bold text-center uppercase">
+                    {fm.abstractBlock.title}
+                  </div>
+                  <p>{fm.abstractBlock.text}</p>
+                  {fm.abstractBlock.keywords && (
+                    <p>
+                      <strong>{fm.abstractBlock.keywordsLabel}</strong> {fm.abstractBlock.keywords}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Optional TOC / LOF / LOT */}
+              {(config.numbering.includeToc || fm.includeListOfFigures || fm.includeListOfTables) && (
                 <div
                   style={{
                     fontSize: `${baseFontPx * 0.86}px`,
                     marginBottom: `${10 * ptToPx}px`,
                   }}
-                  className="p-2.5 rounded border border-black/10 bg-black/[0.02]"
+                  className="p-2.5 rounded border border-black/10 bg-black/[0.02] space-y-1"
                 >
-                  <div
-                    style={{ fontFamily: headingFont, color: typo.headings.h1.color }}
-                    className="font-bold mb-1 text-[0.95em]"
-                  >
-                    {t.preview.tocTitle}
-                  </div>
-                  <div className="flex justify-between">
-                    <span>
-                      {sec1Num}
-                      {t.preview.sec1}
-                    </span>
-                    <span className="opacity-60">1</span>
-                  </div>
-                  {config.numbering.tocDepth >= 2 && (
-                    <div className="flex justify-between pl-4 opacity-80">
-                      <span>
-                        {subSec1Num}
-                        {t.preview.subsec1}
-                      </span>
-                      <span className="opacity-60">1</span>
+                  {(fm.includeListOfFigures || fm.includeListOfTables) && (
+                    <div className="flex flex-wrap gap-2 pb-1 mb-1 border-b border-black/10 text-[0.9em] opacity-80">
+                      {fm.includeListOfFigures && <span>• {t.preview.lofTitle}</span>}
+                      {fm.includeListOfTables && <span>• {t.preview.lotTitle}</span>}
                     </div>
                   )}
-                  <div className="flex justify-between">
-                    <span>
-                      {sec2Num}
-                      {t.preview.sec2}
-                    </span>
-                    <span className="opacity-60">2</span>
-                  </div>
+                  {config.numbering.includeToc && (
+                    <>
+                      <div
+                        style={{ fontFamily: headingFont, color: typo.headings.h1.color }}
+                        className="font-bold mb-1 text-[0.95em]"
+                      >
+                        {t.preview.tocTitle}
+                      </div>
+                      <div className="flex justify-between">
+                        <span>
+                          {sec1Num}
+                          {t.preview.sec1}
+                        </span>
+                        <span className="opacity-60">1</span>
+                      </div>
+                      {config.numbering.tocDepth >= 2 && (
+                        <div className="flex justify-between pl-4 opacity-80">
+                          <span>
+                            {subSec1Num}
+                            {t.preview.subsec1}
+                          </span>
+                          <span className="opacity-60">1</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <span>
+                          {sec2Num}
+                          {t.preview.sec2}
+                        </span>
+                        <span className="opacity-60">2</span>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
@@ -611,7 +653,8 @@ export const PaperPage: React.FC<{
                 </h2>
 
                 <p style={paragraphStyle}>
-                  {t.preview.p1}{' '}
+                  {t.preview.p1}
+                  {m.footnotes.enabled && <sup className="font-semibold ml-0.5">1</sup>}{' '}
                   {m.citations.enabled && (
                     <span
                       style={{
@@ -626,11 +669,60 @@ export const PaperPage: React.FC<{
                   )}
                 </p>
 
+                {m.longQuotes.enabled && (
+                  <blockquote
+                    style={{
+                      marginLeft: `${m.longQuotes.indentLeftMm * MM_TO_PX}px`,
+                      fontSize: `${m.longQuotes.fontSizePt * ptToPx}px`,
+                      lineHeight: m.longQuotes.lineSpacing,
+                      fontStyle: m.longQuotes.italic ? 'italic' : 'normal',
+                      borderLeft: m.longQuotes.leftBorder ? `2px solid ${typo.accentColor}` : 'none',
+                      paddingLeft: m.longQuotes.leftBorder ? '8px' : undefined,
+                      marginTop: '6px',
+                      marginBottom: '6px',
+                    }}
+                    className="break-inside-avoid"
+                  >
+                    {t.preview.longQuoteSample}
+                  </blockquote>
+                )}
+
                 <h3 style={h2Style}>
                   {renderHeadingContent(subSec1Num, t.preview.subsec1, typo.headings.h2)}
                 </h3>
 
                 <p style={paragraphStyle}>{t.preview.p2}</p>
+
+                {m.lists.enabled && (
+                  <div
+                    style={{
+                      marginLeft: `${m.lists.leftMarginMm * MM_TO_PX}px`,
+                      marginBottom: '6px',
+                    }}
+                    className="break-inside-avoid"
+                  >
+                    {t.preview.listSamples.map((item, idx) => {
+                      const marker =
+                        m.lists.bulletStyle === 'dash'
+                          ? '–'
+                          : m.lists.bulletStyle === 'square'
+                            ? '▪'
+                            : m.lists.bulletStyle === 'arrow'
+                              ? '→'
+                              : '•';
+                      return (
+                        <div
+                          key={idx}
+                          style={{ marginBottom: `${m.lists.itemSepPt * ptToPx}px` }}
+                          className="flex items-start gap-2"
+                        >
+                          <span className="shrink-0">{marker}</span>
+                          <span>{item}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
 
                 <h4 style={h3Style}>
                   {renderHeadingContent(subSubSec1Num, t.preview.subsubsec1, typo.headings.h3)}
@@ -941,6 +1033,28 @@ export const PaperPage: React.FC<{
                   </div>
                 </div>
               )}
+            </div>
+          )}
+          </div>
+
+          {pageNumber === 1 && m.footnotes.enabled && (
+            <div className="pt-2 mt-2 shrink-0">
+              <div
+                style={{ width: `${Math.round(m.footnotes.ruleWidthRatio * 100)}%` }}
+                className="border-t border-current/40 mb-1"
+              />
+              <div
+                style={{
+                  fontSize: `${m.footnotes.fontSizePt * ptToPx}px`,
+                  lineHeight: m.footnotes.lineSpacing,
+                  paddingLeft: m.footnotes.hangingIndent ? '12px' : '0px',
+                  textIndent: m.footnotes.hangingIndent ? '-12px' : '0px',
+                }}
+                className="opacity-85"
+              >
+                <span className="font-semibold mr-1">1</span>
+                {t.preview.footnoteSample}
+              </div>
             </div>
           )}
         </div>

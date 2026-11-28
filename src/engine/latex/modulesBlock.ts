@@ -1,10 +1,35 @@
-import { TemplateConfig } from '../../types/template';
+import { ListBulletStyle, ListEnumStyle, TemplateConfig } from '../../types/template';
 import {
   captionJustifyLatex,
   escapeLatex,
-  hasBoxedHeading,
+  needsEarlyGraphicx,
+  needsTcolorboxInTypography,
   separatorLatex,
 } from './utils';
+
+function mapBulletSymbolLatex(style: ListBulletStyle): string {
+  switch (style) {
+    case 'dash':
+      return '--';
+    case 'square':
+      return '\\rule[0.25ex]{0.55ex}{0.55ex}';
+    case 'arrow':
+      return '\\textrightarrow';
+    default:
+      return '\\textbullet';
+  }
+}
+
+function mapEnumFormatLatex(style: ListEnumStyle): string {
+  switch (style) {
+    case 'alphaParen':
+      return '\\alph*)';
+    case 'romanParen':
+      return '\\roman*)';
+    default:
+      return '\\arabic*.';
+  }
+}
 
 export function buildModulesBlock(config: TemplateConfig): string[] {
   const m = config.modules;
@@ -31,7 +56,7 @@ export function buildModulesBlock(config: TemplateConfig): string[] {
   if (m.images.enabled) {
     const img = m.images;
     lines.push('% [Module: Images & Figures]');
-    if (!config.headerFooter.headerLogo.enabled && !config.headerFooter.footerLogo.enabled) {
+    if (!needsEarlyGraphicx(config)) {
       lines.push('\\RequirePackage{graphicx}');
     }
     lines.push('\\RequirePackage{float}');
@@ -135,6 +160,54 @@ export function buildModulesBlock(config: TemplateConfig): string[] {
     lines.push('');
   }
 
+  if (m.longQuotes.enabled && !isSlides) {
+    const lq = m.longQuotes;
+    lines.push('% [Module: Long Direct Quotes (NBR 10520)]');
+    const styleCmd = `\\fontsize{${lq.fontSizePt}}{${(lq.fontSizePt * 1.15).toFixed(1)}}\\selectfont\\setstretch{${lq.lineSpacing.toFixed(2)}}${lq.italic ? '\\itshape' : ''}`;
+    if (lq.leftBorder) {
+      lines.push('\\newtcolorbox{citacaolonga}{');
+      lines.push('  enhanced, breakable,');
+      lines.push('  colback=artisanPaper, colframe=artisanAccent,');
+      lines.push('  boxrule=0pt, leftrule=2pt, arc=0pt,');
+      lines.push('  left=8pt, right=0pt, top=2pt, bottom=2pt,');
+      lines.push(`  enlarge left by=${lq.indentLeftMm}mm,`);
+      lines.push(`  width=\\dimexpr\\linewidth-${lq.indentLeftMm}mm\\relax,`);
+      lines.push(`  fontupper={${styleCmd}}`);
+      lines.push('}');
+    } else {
+      lines.push('\\newenvironment{citacaolonga}{%');
+      lines.push(
+        `  \\begin{list}{}{\\setlength{\\leftmargin}{${lq.indentLeftMm}mm}\\setlength{\\rightmargin}{0pt}\\setlength{\\topsep}{6pt}\\setlength{\\parsep}{0pt}}\\item\\relax${styleCmd}`
+      );
+      lines.push('}{\\end{list}}');
+    }
+    lines.push('\\newenvironment{longquote}{\\begin{citacaolonga}}{\\end{citacaolonga}}');
+    lines.push('');
+  }
+
+  if (m.lists.enabled) {
+    const lst = m.lists;
+    lines.push('% [Module: Custom Lists & Enumerations]');
+    lines.push('\\RequirePackage{enumitem}');
+    lines.push(`\\setlist{itemsep=${lst.itemSepPt}pt, leftmargin=${lst.leftMarginMm}mm}`);
+    lines.push(`\\setlist[itemize,1]{label=${mapBulletSymbolLatex(lst.bulletStyle)}}`);
+    lines.push(`\\setlist[enumerate,1]{label=${mapEnumFormatLatex(lst.enumStyle)}}`);
+    lines.push('');
+  }
+
+  if (m.footnotes.enabled && !isSlides) {
+    const fn = m.footnotes;
+    lines.push('% [Module: Footnotes]');
+    lines.push(`\\RequirePackage[${fn.hangingIndent ? 'hang, ' : ''}bottom]{footmisc}`);
+    lines.push(
+      `\\renewcommand{\\footnotelayout}{\\fontsize{${fn.fontSizePt}}{${(fn.fontSizePt * 1.2).toFixed(1)}}\\selectfont\\setstretch{${fn.lineSpacing.toFixed(2)}}}`
+    );
+    lines.push(
+      `\\renewcommand{\\footnoterule}{\\kern-3pt\\hrule width ${fn.ruleWidthRatio.toFixed(2)}\\columnwidth height 0.4pt\\kern 2.6pt}`
+    );
+    lines.push('');
+  }
+
   if (m.dialogues.enabled) {
     lines.push('% [Module: Dialogues & Speech]');
     const speakerStyle = m.dialogues.speakerBold ? '\\bfseries' : '';
@@ -201,7 +274,7 @@ export function buildModulesBlock(config: TemplateConfig): string[] {
 
   if (m.callouts.enabled) {
     lines.push('% [Module: Callout Boxes]');
-    if (!hasBoxedHeading(config)) {
+    if (!needsTcolorboxInTypography(config)) {
       lines.push('\\RequirePackage[most]{tcolorbox}');
     }
     lines.push('\\newtcolorbox{calloutbox}[1][]{');
@@ -225,7 +298,7 @@ export function buildModulesBlock(config: TemplateConfig): string[] {
     lines.push('');
   }
 
-  if (m.hyperref.enabled && config.documentType !== 'slides') {
+  if (m.hyperref.enabled && !isSlides) {
     lines.push('% [Module: Hyperref & Cross-References — always loaded last]');
     lines.push('\\RequirePackage{hyperref}');
     lines.push('\\hypersetup{');

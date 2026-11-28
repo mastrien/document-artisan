@@ -1,5 +1,5 @@
 import React from 'react';
-import { Boxes, FileText, LayoutTemplate, PanelTop, Type } from 'lucide-react';
+import { Boxes, FileStack, FileText, LayoutTemplate, PanelTop, Type } from 'lucide-react';
 import { useI18n } from '../i18n/LanguageContext';
 import { useTemplate } from '../state/TemplateContext';
 import { InspectorTab } from '../types/template';
@@ -10,6 +10,7 @@ export const SidebarNav: React.FC = () => {
 
   const items: { id: InspectorTab; label: string; icon: React.ReactNode }[] = [
     { id: 'model', label: t.tabs.model, icon: <FileText className="w-4 h-4" /> },
+    { id: 'frontMatter', label: t.tabs.frontMatter, icon: <FileStack className="w-4 h-4" /> },
     { id: 'page', label: t.tabs.page, icon: <LayoutTemplate className="w-4 h-4" /> },
     { id: 'typography', label: t.tabs.typography, icon: <Type className="w-4 h-4" /> },
     { id: 'headerFooter', label: t.tabs.headerFooter, icon: <PanelTop className="w-4 h-4" /> },

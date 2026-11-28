@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_CONFIG, PRESETS } from '../../data/presets';
 import {
   buildClassFile,
+  buildMainTex,
   buildStyleFile,
   generateProjectBundle,
   sanitizeSlug,
@@ -273,6 +274,81 @@ describe('latexGenerator', () => {
     expect(cls).toContain('\\tcbox[');
     expect(cls).toContain('leftrule=2.5pt');
     expect(cls).toContain('name=\\section, numberless');
+    const tcolorboxMatches = cls.match(/\\RequirePackage\[most\]\{tcolorbox\}/g) ?? [];
+    expect(tcolorboxMatches).toHaveLength(1);
+  });
+
+  it('generates ABNT monograph preset with cover, title sheet, bilingual abstracts, LOF/LOT, TOC, and body-only numbering', () => {
+    const monoPreset = PRESETS.find((p) => p.id === 'abnt-monograph')!;
+    const cls = buildClassFile(monoPreset.config);
+    const sty = buildStyleFile(monoPreset.config);
+    const tex = buildMainTex(monoPreset.config, 'class', 'example');
+
+    expect(cls).toContain('\\LoadClass[12pt, a4paper]{article}');
+    expect(cls).toContain('\\newcommand{\\artisancoverpage}');
+    expect(cls).toContain('\\newcommand{\\artisantitlesheet}');
+    expect(cls).toContain('\\newcommand{\\artisanabstract}');
+    expect(cls).toContain('\\newcommand{\\sectionbreak}{\\clearpage}');
+    expect(cls).toContain('\\AtBeginDocument{\\pagestyle{empty}}');
+    expect(cls).not.toContain('\\usepackage');
+    expect(sty).not.toContain('\\LoadClass');
+
+    expect(tex).toContain('\\artisancoverpage');
+    expect(tex).toContain('\\artisantitlesheet');
+    expect(tex).toContain('\\artisanabstract');
+    expect(tex).toContain('\\clearpage\\listoffigures');
+    expect(tex).toContain('\\clearpage\\listoftables');
+    expect(tex).toContain('\\clearpage\\tableofcontents');
+    expect(tex).toContain('\\clearpage\\pagestyle{fancy}');
+    expect(tex).not.toContain('\\maketitle');
+    expect(tex).toContain('\\begin{citacaolonga}');
+    expect(tex).toContain('\\footnote{');
+    expect(cls.indexOf('\\RequirePackage{hyperref}')).toBeLessThan(
+      cls.indexOf('\\RequirePackage{cleveref}')
+    );
+  });
+
+  it('emits inline abstract for ABNT article and separate macros for longQuotes, enumitem lists, and footmisc footnotes without duplicate packages', () => {
+    const cfg = cloneConfig();
+    cfg.headerFooter.headerLogo.enabled = true;
+    cfg.frontMatter.coverPage.enabled = true;
+    cfg.frontMatter.coverPage.showLogo = true;
+    cfg.modules.images.enabled = true;
+    cfg.modules.callouts.enabled = true;
+    cfg.modules.longQuotes = {
+      enabled: true,
+      indentLeftMm: 40,
+      fontSizePt: 10,
+      lineSpacing: 1.0,
+      italic: false,
+      leftBorder: true,
+    };
+    cfg.modules.lists = {
+      enabled: true,
+      bulletStyle: 'arrow',
+      enumStyle: 'alphaParen',
+      itemSepPt: 4,
+      leftMarginMm: 10,
+    };
+    cfg.modules.footnotes = {
+      enabled: true,
+      fontSizePt: 9.5,
+      lineSpacing: 1.0,
+      ruleWidthRatio: 0.35,
+      hangingIndent: true,
+    };
+
+    const cls = buildClassFile(cfg);
+    expect(cls).toContain('\\newtcolorbox{citacaolonga}');
+    expect(cls).toContain('enlarge left by=40mm');
+    expect(cls).toContain('\\RequirePackage{enumitem}');
+    expect(cls).toContain('\\setlist[itemize,1]{label=\\textrightarrow}');
+    expect(cls).toContain('\\setlist[enumerate,1]{label=\\alph*)}');
+    expect(cls).toContain('\\RequirePackage[hang, bottom]{footmisc}');
+    expect(cls).toContain('\\renewcommand{\\footnoterule}');
+
+    const graphicxMatches = cls.match(/\\RequirePackage\{graphicx\}/g) ?? [];
+    expect(graphicxMatches).toHaveLength(1);
     const tcolorboxMatches = cls.match(/\\RequirePackage\[most\]\{tcolorbox\}/g) ?? [];
     expect(tcolorboxMatches).toHaveLength(1);
   });

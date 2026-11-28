@@ -33,6 +33,7 @@ export function baseLatexClass(config: TemplateConfig): string {
     case 'slides':
       return 'beamer';
     default:
+      // 'article' and 'monograph' both build cleanly on article + titlesec/fancyhdr
       return 'article';
   }
 }
@@ -81,8 +82,38 @@ export function hasBoxedHeading(config: TemplateConfig): boolean {
   );
 }
 
-export function needsTcolorbox(config: TemplateConfig): boolean {
-  return hasBoxedHeading(config) || config.modules.callouts.enabled;
+export function needsTcolorboxInTypography(config: TemplateConfig): boolean {
+  if (config.documentType === 'slides') return false;
+  return (
+    hasBoxedHeading(config) ||
+    config.modules.callouts.enabled ||
+    (config.modules.longQuotes.enabled && config.modules.longQuotes.leftBorder)
+  );
+}
+
+export function needsEarlyGraphicx(config: TemplateConfig): boolean {
+  if (config.documentType === 'slides') return false;
+  return (
+    config.headerFooter.headerLogo.enabled ||
+    config.headerFooter.footerLogo.enabled ||
+    (config.frontMatter.coverPage.enabled && config.frontMatter.coverPage.showLogo)
+  );
+}
+
+export function hasPreTextualPages(config: TemplateConfig): boolean {
+  if (config.documentType === 'slides') return false;
+  const fm = config.frontMatter;
+  const separateToc =
+    config.numbering.includeToc &&
+    (config.documentType === 'monograph' || fm.coverPage.enabled || fm.titleSheet.enabled);
+  return (
+    fm.coverPage.enabled ||
+    fm.titleSheet.enabled ||
+    (fm.abstractBlock.enabled && fm.abstractBlock.onSeparatePage) ||
+    fm.includeListOfFigures ||
+    fm.includeListOfTables ||
+    separateToc
+  );
 }
 
 export function separatorLatex(sep: CaptionSeparator): string {

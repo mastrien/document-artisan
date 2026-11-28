@@ -1,5 +1,6 @@
 import { GeneratedFile, TemplateConfig } from '../types/template';
 import { buildFontBlock } from './latex/fontsBlock';
+import { buildFrontMatterMacros } from './latex/frontMatterBlock';
 import { buildHeaderFooterBlock } from './latex/headerFooterBlock';
 import { buildModulesBlock } from './latex/modulesBlock';
 import { buildPageGeometryAndColumns } from './latex/pageBlock';
@@ -20,6 +21,10 @@ function buildCoreBody(config: TemplateConfig): string[] {
   lines.push('');
   lines.push(...buildTypographyAndHeadingsBlock(config));
   lines.push('');
+  const fmLines = buildFrontMatterMacros(config);
+  if (fmLines.length > 0) {
+    lines.push(...fmLines);
+  }
   lines.push(...buildHeaderFooterBlock(config));
   lines.push('');
   lines.push(...buildModulesBlock(config));

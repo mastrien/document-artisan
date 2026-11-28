@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, FileSpreadsheet, FileText, Presentation } from 'lucide-react';
+import { BookOpen, FileSpreadsheet, FileText, GraduationCap, Presentation } from 'lucide-react';
 import { PRESETS } from '../../data/presets';
 import { useI18n } from '../../i18n/LanguageContext';
 import { useTemplate } from '../../state/TemplateContext';
@@ -12,6 +12,7 @@ export const ModelPanel: React.FC = () => {
 
   const docTypes: { id: DocumentType; label: string; icon: React.ReactNode; soon?: boolean }[] = [
     { id: 'article', label: t.model.types.article, icon: <FileText className="w-4 h-4" /> },
+    { id: 'monograph', label: t.model.types.monograph, icon: <GraduationCap className="w-4 h-4" /> },
     { id: 'book', label: t.model.types.book, icon: <BookOpen className="w-4 h-4" />, soon: true },
     {
       id: 'report',

@@ -1,5 +1,5 @@
 import { HeadingLevelStyle, TemplateConfig } from '../../types/template';
-import { escapeLatex, hasBoxedHeading, hexToRgbDigits } from './utils';
+import { escapeLatex, hexToRgbDigits, needsTcolorboxInTypography } from './utils';
 
 export function formatHeadingLevel(
   cmd: '\\section' | '\\subsection' | '\\subsubsection',
@@ -200,10 +200,13 @@ export function buildTypographyAndHeadingsBlock(config: TemplateConfig): string[
       lines.push('\\setcounter{secnumdepth}{0}');
     }
 
-    if (hasBoxedHeading(config)) {
+    if (needsTcolorboxInTypography(config)) {
       lines.push('\\RequirePackage[most]{tcolorbox}');
     }
     lines.push('\\RequirePackage[explicit]{titlesec}');
+    if (config.frontMatter.sectionStartsNewPage) {
+      lines.push('\\newcommand{\\sectionbreak}{\\clearpage}');
+    }
     lines.push(
       ...formatHeadingLevel(
         '\\section',

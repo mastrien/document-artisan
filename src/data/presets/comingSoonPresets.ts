@@ -2,8 +2,12 @@ import {
   baseExportOptions,
   DEFAULT_FIRST_PAGE_HF,
   DEFAULT_FOOTER_LOGO,
+  DEFAULT_FOOTNOTES,
+  DEFAULT_FRONT_MATTER,
   DEFAULT_HEADER_LOGO,
   DEFAULT_HEADING_BOX,
+  DEFAULT_LISTS,
+  DEFAULT_LONG_QUOTES,
   PresetDefinition,
 } from './defaults';
 
@@ -173,6 +177,7 @@ export const COMING_SOON_PRESETS: PresetDefinition[] = [
         tocDepth: 2,
         includeToc: true,
       },
+      frontMatter: { ...DEFAULT_FRONT_MATTER },
       modules: {
         images: {
           enabled: true,
@@ -227,6 +232,9 @@ export const COMING_SOON_PRESETS: PresetDefinition[] = [
         code: { enabled: false, lineNumbers: false, frame: false, backgroundTint: false },
         hyperref: { enabled: true, coloredLinks: false },
         callouts: { enabled: true, borderLeftOnly: true },
+        longQuotes: { ...DEFAULT_LONG_QUOTES },
+        lists: { ...DEFAULT_LISTS },
+        footnotes: { ...DEFAULT_FOOTNOTES },
       },
       exportOptions: baseExportOptions,
     },
@@ -396,6 +404,7 @@ export const COMING_SOON_PRESETS: PresetDefinition[] = [
         tocDepth: 2,
         includeToc: true,
       },
+      frontMatter: { ...DEFAULT_FRONT_MATTER },
       modules: {
         images: {
           enabled: true,
@@ -450,6 +459,9 @@ export const COMING_SOON_PRESETS: PresetDefinition[] = [
         code: { enabled: true, lineNumbers: true, frame: true, backgroundTint: true },
         hyperref: { enabled: true, coloredLinks: true },
         callouts: { enabled: true, borderLeftOnly: true },
+        longQuotes: { ...DEFAULT_LONG_QUOTES },
+        lists: { ...DEFAULT_LISTS },
+        footnotes: { ...DEFAULT_FOOTNOTES },
       },
       exportOptions: baseExportOptions,
     },
@@ -619,6 +631,7 @@ export const COMING_SOON_PRESETS: PresetDefinition[] = [
         tocDepth: 1,
         includeToc: false,
       },
+      frontMatter: { ...DEFAULT_FRONT_MATTER },
       modules: {
         images: {
           enabled: true,
@@ -673,6 +686,9 @@ export const COMING_SOON_PRESETS: PresetDefinition[] = [
         code: { enabled: true, lineNumbers: false, frame: true, backgroundTint: true },
         hyperref: { enabled: true, coloredLinks: true },
         callouts: { enabled: true, borderLeftOnly: true },
+        longQuotes: { ...DEFAULT_LONG_QUOTES },
+        lists: { ...DEFAULT_LISTS },
+        footnotes: { ...DEFAULT_FOOTNOTES },
       },
       exportOptions: baseExportOptions,
     },
