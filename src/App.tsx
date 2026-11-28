@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CodeInspector } from './components/code/CodeInspector';
+import { FrontMatterPanel } from './components/inspector/FrontMatterPanel';
 import { HeaderFooterPanel } from './components/inspector/HeaderFooterPanel';
 import { ModelPanel } from './components/inspector/ModelPanel';
 import { ModulesPanel } from './components/inspector/ModulesPanel';
@@ -7,19 +8,22 @@ import { PageColumnsPanel } from './components/inspector/PageColumnsPanel';
 import { TypographyPanel } from './components/inspector/TypographyPanel';
 import { ExportModal } from './components/modal/ExportModal';
 import { DocumentCanvas } from './components/preview/DocumentCanvas';
+import { ReferencePane } from './components/preview/ReferencePane';
 import { SidebarNav } from './components/SidebarNav';
 import { TopBar } from './components/TopBar';
 import { LanguageProvider } from './i18n/LanguageContext';
 import { TemplateProvider, useTemplate } from './state/TemplateContext';
 
 const StudioShell: React.FC = () => {
-  const { activeTab, viewMode } = useTemplate();
+  const { activeTab, viewMode, referencePaneOpen } = useTemplate();
   const [exportOpen, setExportOpen] = useState(false);
 
   const renderInspector = () => {
     switch (activeTab) {
       case 'model':
         return <ModelPanel />;
+      case 'frontMatter':
+        return <FrontMatterPanel />;
       case 'page':
         return <PageColumnsPanel />;
       case 'typography':
@@ -46,8 +50,19 @@ const StudioShell: React.FC = () => {
         {/* Workspace Area */}
         <main className="flex-1 min-w-0 flex">
           {(viewMode === 'preview' || viewMode === 'split') && (
-            <div className={viewMode === 'split' ? 'w-1/2 min-w-0 h-full' : 'w-full h-full'}>
-              <DocumentCanvas />
+            <div
+              className={`${
+                viewMode === 'split' ? 'w-1/2 min-w-0 h-full' : 'w-full h-full'
+              } flex`}
+            >
+              {referencePaneOpen && (
+                <div className="w-1/2 min-w-0 h-full">
+                  <ReferencePane />
+                </div>
+              )}
+              <div className={referencePaneOpen ? 'w-1/2 min-w-0 h-full' : 'w-full h-full'}>
+                <DocumentCanvas />
+              </div>
             </div>
           )}
 

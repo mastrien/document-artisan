@@ -9,6 +9,7 @@ import {
   Grid2x2,
   Maximize2,
   Moon,
+  SplitSquareHorizontal,
   Sun,
   ZoomIn,
   ZoomOut,
@@ -33,6 +34,8 @@ export const TopBar: React.FC<{ onOpenExport: () => void }> = ({ onOpenExport })
     setZoom,
     showGuides,
     setShowGuides,
+    referencePaneOpen,
+    setReferencePaneOpen,
     previewEngine,
     setPreviewEngine,
     latexEnv,
@@ -190,6 +193,20 @@ export const TopBar: React.FC<{ onOpenExport: () => void }> = ({ onOpenExport })
                 <span className="text-[11px] font-medium">{t.topbar.guides}</span>
               </button>
             )}
+
+            <button
+              type="button"
+              onClick={() => setReferencePaneOpen((o) => !o)}
+              title={t.topbar.referenceHint}
+              className={`hidden md:flex items-center gap-1 px-2 py-1 rounded-md text-xs border transition-colors cursor-pointer ${
+                referencePaneOpen
+                  ? 'border-amber-600/50 bg-amber-500/10 text-amber-800 dark:text-amber-300'
+                  : 'border-[var(--studio-border)] text-[var(--studio-muted)] hover:text-[var(--studio-text)]'
+              }`}
+            >
+              <SplitSquareHorizontal className="w-3.5 h-3.5" />
+              <span className="text-[11px] font-medium">{t.topbar.reference}</span>
+            </button>
           </>
         )}
       </div>

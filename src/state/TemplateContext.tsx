@@ -7,6 +7,17 @@ import {
   TauriLatexCompiler,
 } from '../engine/compiler';
 import {
+  arrayBufferToDataUrl,
+  deletePersistedAsset,
+  loadPersistedAsset,
+  loadPersistedManifest,
+  mimeTypeForLogoFile,
+  PersistedAssetManifest,
+  PersistedFontFamilyMeta,
+  savePersistedAsset,
+  savePersistedManifest,
+} from './assetStore';
+import {
   CustomFontFamily,
   CustomFontVariantFile,
   DocumentType,
@@ -45,6 +56,8 @@ interface TemplateContextValue {
   setZoom: React.Dispatch<React.SetStateAction<number>>;
   showGuides: boolean;
   setShowGuides: React.Dispatch<React.SetStateAction<boolean>>;
+  referencePaneOpen: boolean;
+  setReferencePaneOpen: React.Dispatch<React.SetStateAction<boolean>>;
   previewEngine: PreviewEngineMode;
   setPreviewEngine: (mode: PreviewEngineMode) => void;
   autoCompilePdf: boolean;
@@ -157,6 +170,13 @@ export function sanitizeStoredConfig(parsed: Partial<TemplateConfig>): TemplateC
         (parsed.headerFooter?.suppressFirstPage === false ? 'same' : def.headerFooter.firstPageMode),
     },
     numbering: { ...def.numbering, ...parsed.numbering },
+    frontMatter: {
+      ...def.frontMatter,
+      ...parsed.frontMatter,
+      coverPage: { ...def.frontMatter.coverPage, ...parsed.frontMatter?.coverPage },
+      titleSheet: { ...def.frontMatter.titleSheet, ...parsed.frontMatter?.titleSheet },
+      abstractBlock: { ...def.frontMatter.abstractBlock, ...parsed.frontMatter?.abstractBlock },
+    },
     modules: {
       images: { ...def.modules.images, ...parsed.modules?.images },
       tables: { ...def.modules.tables, ...parsed.modules?.tables },
@@ -166,6 +186,9 @@ export function sanitizeStoredConfig(parsed: Partial<TemplateConfig>): TemplateC
       code: { ...def.modules.code, ...parsed.modules?.code },
       hyperref: { ...def.modules.hyperref, ...parsed.modules?.hyperref },
       callouts: { ...def.modules.callouts, ...parsed.modules?.callouts },
+      longQuotes: { ...def.modules.longQuotes, ...parsed.modules?.longQuotes },
+      lists: { ...def.modules.lists, ...parsed.modules?.lists },
+      footnotes: { ...def.modules.footnotes, ...parsed.modules?.footnotes },
     },
     exportOptions: { ...def.exportOptions, ...parsed.exportOptions },
     // Binary buffers cannot be persisted into localStorage
@@ -200,6 +223,7 @@ export const TemplateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [activeTab, setActiveTab] = useState<InspectorTab>('model');
   const [zoom, setZoom] = useState<number>(0.74);
   const [showGuides, setShowGuides] = useState<boolean>(true);
+  const [referencePaneOpen, setReferencePaneOpen] = useState<boolean>(false);
   const [previewEngine, setPreviewEngine] = useState<PreviewEngineMode>('visual');
   const [autoCompilePdf, setAutoCompilePdf] = useState<boolean>(true);
   const [latexEnv, setLatexEnv] = useState<LatexEnvInfo | null>(null);
@@ -215,6 +239,114 @@ export const TemplateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     compilerRef.current.detectEnvironment().then((env) => {
       if (env) setLatexEnv(env);
     });
+  }, []);
+
+  const persistManifestFromState = useCallback(async (cfg: TemplateConfig) => {
+    const customFonts: PersistedFontFamilyMeta[] = cfg.customFonts.map((fam) => {
+      const variantsMeta: PersistedFontFamilyMeta['variants'] = {};
+      for (const [k, v] of Object.entries(fam.variants) as [FontVariantKey, CustomFontVariantFile | undefined][]) {
+        if (v) {
+          variantsMeta[k] = {
+            fileName: v.fileName,
+            format: v.format,
+            assetKey: `fonts/${fam.id.replace(/[^a-zA-Z0-9_-]+/g, '_')}-${v.fileName}`,
+          };
+        }
+      }
+      return { id: fam.id, familyName: fam.familyName, variants: variantsMeta };
+    });
+
+    const hl = cfg.headerFooter.headerLogo;
+    const fl = cfg.headerFooter.footerLogo;
+    const manifest: PersistedAssetManifest = {
+      customFonts,
+      headerLogo:
+        hl.fileName && hl.buffer
+          ? {
+              fileName: hl.fileName,
+              assetKey: `logos/${hl.fileName}`,
+              mimeType: mimeTypeForLogoFile(hl.fileName),
+            }
+          : undefined,
+      footerLogo:
+        fl.fileName && fl.buffer
+          ? {
+              fileName: fl.fileName,
+              assetKey: `logos/${fl.fileName}`,
+              mimeType: mimeTypeForLogoFile(fl.fileName),
+            }
+          : undefined,
+    };
+    await savePersistedManifest(manifest);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const manifest = await loadPersistedManifest();
+      if (!manifest || cancelled) return;
+
+      const hydratedFonts: CustomFontFamily[] = [];
+      for (const fm of manifest.customFonts) {
+        const variants: Partial<Record<FontVariantKey, CustomFontVariantFile>> = {};
+        for (const [k, v] of Object.entries(fm.variants) as [
+          FontVariantKey,
+          PersistedFontFamilyMeta['variants'][FontVariantKey],
+        ][]) {
+          if (!v) continue;
+          const buffer = await loadPersistedAsset(v.assetKey);
+          if (!buffer) continue;
+          try {
+            const face = new FontFace(fm.id, buffer.slice(0), variantCssDescriptors(k));
+            await face.load();
+            document.fonts.add(face);
+          } catch {
+            // Browser FontFace decode may fail for unsupported formats; keep bytes for LaTeX
+          }
+          variants[k] = { fileName: v.fileName, format: v.format, buffer };
+        }
+        if (Object.keys(variants).length > 0) {
+          hydratedFonts.push({ id: fm.id, familyName: fm.familyName, variants });
+        }
+      }
+
+      const hlBuf = manifest.headerLogo
+        ? await loadPersistedAsset(manifest.headerLogo.assetKey)
+        : null;
+      const flBuf = manifest.footerLogo
+        ? await loadPersistedAsset(manifest.footerLogo.assetKey)
+        : null;
+
+      if (cancelled) return;
+      setConfig((prev) => ({
+        ...prev,
+        customFonts: hydratedFonts.length > 0 ? hydratedFonts : prev.customFonts,
+        headerFooter: {
+          ...prev.headerFooter,
+          headerLogo:
+            hlBuf && manifest.headerLogo
+              ? {
+                  ...prev.headerFooter.headerLogo,
+                  fileName: manifest.headerLogo.fileName,
+                  buffer: hlBuf,
+                  dataUrl: arrayBufferToDataUrl(hlBuf, manifest.headerLogo.mimeType),
+                }
+              : prev.headerFooter.headerLogo,
+          footerLogo:
+            flBuf && manifest.footerLogo
+              ? {
+                  ...prev.headerFooter.footerLogo,
+                  fileName: manifest.footerLogo.fileName,
+                  buffer: flBuf,
+                  dataUrl: arrayBufferToDataUrl(flBuf, manifest.footerLogo.mimeType),
+                }
+              : prev.headerFooter.footerLogo,
+        },
+      }));
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const compileNow = useCallback(async () => {
@@ -305,13 +437,26 @@ export const TemplateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           twoside: false,
           margins: { top: 10, bottom: 10, left: 12, right: 12, linked: false },
         };
-      } else if (prev.page.size === 'slide16x9' || prev.page.size === 'slide4x3') {
-        next.page = {
-          ...prev.page,
-          size: docType === 'book' ? 'a5' : 'a4',
-          orientation: 'portrait',
-          margins: { top: 25, bottom: 20, left: 25, right: 20, linked: false },
-        };
+      } else {
+        if (prev.page.size === 'slide16x9' || prev.page.size === 'slide4x3') {
+          next.page = {
+            ...prev.page,
+            size: docType === 'book' ? 'a5' : 'a4',
+            orientation: 'portrait',
+            margins: { top: 25, bottom: 20, left: 25, right: 20, linked: false },
+          };
+        }
+        if (docType === 'monograph') {
+          next.frontMatter = {
+            ...prev.frontMatter,
+            coverPage: { ...prev.frontMatter.coverPage, enabled: true },
+            titleSheet: { ...prev.frontMatter.titleSheet, enabled: true },
+            abstractBlock: { ...prev.frontMatter.abstractBlock, enabled: true, onSeparatePage: true },
+            sectionStartsNewPage: true,
+            startNumberingAtBody: true,
+          };
+          next.numbering = { ...prev.numbering, includeToc: true };
+        }
       }
       return next;
     });
@@ -352,28 +497,35 @@ export const TemplateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         format,
         buffer,
       };
+      await savePersistedAsset(
+        `fonts/${familyId.replace(/[^a-zA-Z0-9_-]+/g, '_')}-${file.name}`,
+        buffer
+      );
     }
 
     setConfig((prev) => {
       const existingIdx = prev.customFonts.findIndex((f) => f.id === familyId);
+      let nextCfg: TemplateConfig;
       if (existingIdx >= 0) {
         const updated = [...prev.customFonts];
         updated[existingIdx] = {
           ...updated[existingIdx],
           variants: { ...updated[existingIdx].variants, ...newVariants },
         };
-        return { ...prev, customFonts: updated };
+        nextCfg = { ...prev, customFonts: updated };
+      } else {
+        const created: CustomFontFamily = {
+          id: familyId,
+          familyName: derivedName,
+          variants: newVariants,
+        };
+        nextCfg = {
+          ...prev,
+          customFonts: [...prev.customFonts, created],
+        };
       }
-
-      const created: CustomFontFamily = {
-        id: familyId,
-        familyName: derivedName,
-        variants: newVariants,
-      };
-      return {
-        ...prev,
-        customFonts: [...prev.customFonts, created],
-      };
+      void persistManifestFromState(nextCfg);
+      return nextCfg;
     });
 
     return familyId;
@@ -381,9 +533,19 @@ export const TemplateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const removeCustomFontFamily = (familyId: string) => {
     setConfig((prev) => {
+      const targetFam = prev.customFonts.find((f) => f.id === familyId);
+      if (targetFam) {
+        for (const v of Object.values(targetFam.variants)) {
+          if (v) {
+            void deletePersistedAsset(
+              `fonts/${familyId.replace(/[^a-zA-Z0-9_-]+/g, '_')}-${v.fileName}`
+            );
+          }
+        }
+      }
       const fallback = DEFAULT_CONFIG.typography.bodyFontId;
       const t = prev.typography;
-      return {
+      const nextCfg: TemplateConfig = {
         ...prev,
         customFonts: prev.customFonts.filter((f) => f.id !== familyId),
         typography: {
@@ -398,11 +560,20 @@ export const TemplateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             t.monoFontId === familyId ? DEFAULT_CONFIG.typography.monoFontId : t.monoFontId,
         },
       };
+      void persistManifestFromState(nextCfg);
+      return nextCfg;
     });
   };
 
   const removeCustomFontVariant = (familyId: string, variant: FontVariantKey) => {
     setConfig((prev) => {
+      const targetFam = prev.customFonts.find((f) => f.id === familyId);
+      const removed = targetFam?.variants[variant];
+      if (removed) {
+        void deletePersistedAsset(
+          `fonts/${familyId.replace(/[^a-zA-Z0-9_-]+/g, '_')}-${removed.fileName}`
+        );
+      }
       const updated = prev.customFonts
         .map((fam) => {
           if (fam.id !== familyId) return fam;
@@ -411,7 +582,9 @@ export const TemplateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           return { ...fam, variants: nextVars };
         })
         .filter((fam) => Object.keys(fam.variants).length > 0);
-      return { ...prev, customFonts: updated };
+      const nextCfg = { ...prev, customFonts: updated };
+      void persistManifestFromState(nextCfg);
+      return nextCfg;
     });
   };
 
@@ -463,9 +636,10 @@ export const TemplateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
     }
 
+    await savePersistedAsset(`logos/${safeFileName}`, buffer);
     setConfig((prev) => {
       const key = target === 'header' ? 'headerLogo' : 'footerLogo';
-      return {
+      const nextCfg: TemplateConfig = {
         ...prev,
         headerFooter: {
           ...prev.headerFooter,
@@ -478,13 +652,19 @@ export const TemplateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           },
         },
       };
+      void persistManifestFromState(nextCfg);
+      return nextCfg;
     });
   };
 
   const removeHeaderFooterLogo = (target: 'header' | 'footer') => {
     setConfig((prev) => {
       const key = target === 'header' ? 'headerLogo' : 'footerLogo';
-      return {
+      const oldName = prev.headerFooter[key].fileName;
+      if (oldName) {
+        void deletePersistedAsset(`logos/${oldName}`);
+      }
+      const nextCfg: TemplateConfig = {
         ...prev,
         headerFooter: {
           ...prev.headerFooter,
@@ -497,6 +677,8 @@ export const TemplateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           },
         },
       };
+      void persistManifestFromState(nextCfg);
+      return nextCfg;
     });
   };
 
@@ -536,6 +718,8 @@ export const TemplateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setZoom,
         showGuides,
         setShowGuides,
+        referencePaneOpen,
+        setReferencePaneOpen,
         previewEngine,
         setPreviewEngine,
         autoCompilePdf,

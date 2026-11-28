@@ -1,5 +1,7 @@
+mod assets;
 mod latex;
 
+use assets::{delete_local_asset, list_local_assets, load_local_asset, save_local_asset};
 use latex::{
     compile_latex_bundle_sync, detect_latex_environment_sync, list_system_fonts_sync,
     CompileRequest, CompileResponse, LatexEnvInfo,
@@ -44,7 +46,11 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             detect_latex_environment,
             compile_latex_bundle,
-            list_system_fonts
+            list_system_fonts,
+            save_local_asset,
+            load_local_asset,
+            delete_local_asset,
+            list_local_assets
         ])
         .run(tauri::generate_context!())
         .expect("error while running Document Artisan Tauri application");
